@@ -1,3 +1,7 @@
+//define brew cases
+#define mash 0
+#define wort 1
+
 
 //inport Pins
 extern const int outlet1;
@@ -24,33 +28,42 @@ void loop()
  if(ButtonValue==3 || ButtonValue==4)
  {
     changeScreens();
-    if(displayOption==0)
-    displayOption=1;
-    else
+    if(displayOption==2)
     displayOption=0;
+    else
+    displayOption++;
  }
   switch(brewStage)
   {
-       case 0:
+       case mash:
        {
          if(HoldTempDone())
           {
-            brewStage++;
+            if(moveToNextMashStep())
+            {
+              //setup next mashStep
+              SetupHoldTemp(currentOutlet,98.5,10);
+              last = 0;
+            }else
+            {
+              brewStage=wort; 
+            }
           }
          break;
        }
-       case 1:
+       case wort:
        {
-         //displayOption++;
-         SetupHoldTemp(currentOutlet,100,1,5,22);
-         last = 0;
-         brewStage++;
-         break;
+        if(HoldTempDone()) while(1); 
+        
+        if(isTimeForHops())
+        {
+               //pour in the hops yo! 
+        }
        }
        
        case 2:
        {
-        if(HoldTempDone()) while(1); 
+         //do less for now
        }
   }
      
@@ -61,13 +74,15 @@ void loop()
     {
       case 0:
         displayTimeAndTemp();
-        displayTimeAndTempLCD();
+        displaySpargeLCD();
         break;
         
       case 1:
-        displayElapsSecsLCD();
-        Serial.println(getElapsed()); 
+        displayMashLCD();
         break;
+        
+      case 2:
+        displayWortLCD();
     }
     last = getElapsed();
  }

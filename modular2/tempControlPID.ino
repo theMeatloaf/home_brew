@@ -1,12 +1,34 @@
 //All Temp and Time Holder Variables:
  static unsigned int elapSecs, lastSec, finalSecs, thisSec;
- static int displayHours, displayMins, displaySecs, controlPin;
+ static int displayHours, displayMins, displaySecs, controlPin, displayHoursF, displayMinsF, displaySecsF;
  static double temp;
+
+void SetupHoldTemp(int inputPin, double tempy, unsigned int totalSecs)
+{
+  temp = tempy;
+  controlPin = inputPin;
+
+  displayHoursF = (int)totalSecs/60/60;
+  displayMinsF = (int)((totalSecs - (displayHoursF*60*60))/60);
+  displaySecsF = (totalSecs - (displayHoursF*60*60) - (displayMinsF*60));
+
+  displayHours = 0;
+  displayMins = 0;
+  displaySecs = 0;
+  elapSecs = 0;
+  lastSec  = millis()/1000;//start last sec counter
+  
+  finalSecs = totalSecs;
+}
 
 void SetupHoldTemp(int inputPin, double tempy, unsigned int hours, unsigned int mins, unsigned int secs)
 {
   temp = tempy;
   controlPin = inputPin;
+  
+  displayHoursF = hours;
+  displayMinsF = mins;
+  displaySecsF = secs;
   
   displayHours = 0;
   displayMins = 0;
@@ -45,6 +67,21 @@ void setupTempController()
   startTempControl();
 }
 
+int getFinalHours()
+{
+  return displayHoursF; 
+}
+
+int getFinalMins()
+{
+     return displayMinsF; 
+}
+
+int getFinalSecs()
+{
+     return displaySecsF; 
+}
+
 int getDisplayHours()
 {
     return elapSecs/60/60;
@@ -58,6 +95,21 @@ int getDisplayMins()
 int getDisplaySecs()
 {
   return elapSecs-(getDisplayHours()*60*60)-(getDisplayMins()*60);
+}
+
+int convertToDisHours(unsigned int inputSecs)
+{
+  return (int)inputSecs/60/60;
+}
+
+int convertToDisMins(unsigned int inputSecs)
+{
+    return (int)((inputSecs - (convertToDisHours(inputSecs)*60*60))/60);
+}
+
+int convertToDisSecs(unsigned int inputSecs)
+{
+    return (inputSecs - (convertToDisHours(inputSecs)*60*60) - (convertToDisMins(inputSecs)*60));
 }
 
 //Get toal elapsed
