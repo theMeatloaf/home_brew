@@ -90,5 +90,5 @@ void tempControllerPrint()
   Serial.print(" Goal Temp:");
   Serial.print(holdTemp);
   Serial.print(" Current Temp:");
-  Serial.print(getTempF(getTemp()));
+  //Serial.print(getTempF(getTemp()));
 }

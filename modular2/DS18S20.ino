@@ -1,35 +1,21 @@
 #include <OneWire.h> 
-#include <DallasTemperature.h>
 
 //inport Pins
 extern const int DS18S20_Pin;//DS18S20 Signal pin on digital 7
-extern const int spargeVesselTemp;
-extern const int mashVesselTemp;
-extern const int wortVesselTemp;
+extern const int spargeVesselTemp = 70;
+extern const int mashVesselTemp   =  71;
+extern const int wortVesselTemp  = 72;
 
 
 //Temperature chip i/o
 OneWire ds(DS18S20_Pin);  // on digital pin 2
 
-// Pass our oneWire reference to Dallas Temperature. 
- DallasTemperature sensors(&ds);
 
 // arrays to hold device addresses
   DeviceAddress spargeTherm, mashTherm, wortTherm;
 
 void setupTempSensor(void) {
   Serial.begin(9600);
-  sensors.begin();
-   // locate devices on the bus
-  Serial.print("Locating devices...");
-  Serial.print("Found ");
-  Serial.print(sensors.getDeviceCount(), DEC);
-  Serial.println(" devices.");
-
-  // report parasite power requirements
-  Serial.print("Parasite power is: "); 
-  if (sensors.isParasitePowerMode()) Serial.println("ON");
-  else Serial.println("OFF");
   
    ds.reset_search();
   if (!ds.search(spargeTherm)) Serial.println("Unable to find address for spargeTherm");
@@ -41,23 +27,26 @@ void setupTempSensor(void) {
 
 float getTempNew(int vessel)
 {
-   sensors.requestTemperatures();
+   float tempC;
    switch(vessel)
    {
+     
     case spargeVesselTemp:
-        float tempC = sensors.getTempC(spargeTherm);
+        tempC = getTemp(spargeTherm);
+        break;
     case mashVesselTemp:
-        float tempC = sensors.getTempC(mashTherm);
-    case:wortVesselTemp:
-        float tempC = sensors.getTempC(wortTherm);
+        tempC = getTemp(mashTherm);
+        break;
+    case wortVesselTemp:
+        tempC = getTemp(wortTherm);
+        break;
    }
-   float tempC = sensors.getTempC(spargeTherm);
    return tempC;
 }
 
 //for testing
 void printTemp(void) {
-  float temperature = getTemp();
+  float temperature = getTemp(spargeTherm);
   
   Serial.print(temperature);
   Serial.print("   Farenheight:");
@@ -69,17 +58,16 @@ void printTemp(void) {
 }
 
 //need to address
-float getTemp(){
+float getTemp(DeviceAddress addr){
   //returns the temperature from one DS18S20 in DEG Celsius
 
   byte data[12];
-  byte addr[8];
 
-  if ( !ds.search(addr)) {
+  /*if ( !ds.search(addr)) {
       //no more sensors on chain, reset search
       ds.reset_search();
       return -1000;
-  }
+  }*/
 
   if ( OneWire::crc8( addr, 7) != addr[7]) {
       Serial.println("CRC is not valid!");

@@ -1,5 +1,5 @@
 //All Temp and Time Holder Variables:
- static unsigned int elapSecs, lastSec, finalSecs, thisSec;
+ static unsigned int elapSecs, lastSec, finalSecs, thisSec, totalElapSecs;
  static int displayHours, displayMins, displaySecs, controlPin, displayHoursF, displayMinsF, displaySecsF;
  static double temp;
  
@@ -53,6 +53,7 @@ boolean HoldTempDone(int vessel)
     {
       lastSec = thisSec;//increment last
       elapSecs++;
+      totalElapSecs++;
     }
     PIDLoop(temp, controlPin, vessel);//hold temp at F temp
     return false;
@@ -120,6 +121,11 @@ int convertToDisSecs(unsigned int inputSecs)
 unsigned int getElapsed()
 {
  return elapSecs; 
+}
+
+unsigned int getAllElapsed()
+{
+ return  totalElapSecs;
 }
 
 //serial debug Display
