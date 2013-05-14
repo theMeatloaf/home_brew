@@ -124,7 +124,7 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.print("*MASH*");
   
    lcd.setCursor(1,1);
-  if(getCurrentMashStep()>0)
+  if(getCurrentMashStep()>0 && currentBrewStage()==mash)
   {
   if(getDisplayHours()<10)lcd.print("0");
   lcd.print(getDisplayHours());
@@ -208,15 +208,25 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.setCursor(0,3);
   lcd.print("HOPS:");
   
-  lcd.print(currentHopsStep());
+  if(currentHopsStep()<=totalHopsSteps())
+  {
+    lcd.print(currentHopsStep());
+  }
+  else
+  {
+  lcd.print(totalHopsSteps());
+  }
   lcd.print("/");
   lcd.print(totalHopsSteps());
     
   lcd.print(" ");
+  if(convertToDisHours(currentIntervalTime())<10)lcd.print("0");
   lcd.print(convertToDisHours(currentIntervalTime()));
   lcd.print(":");
+  if(convertToDisMins(currentIntervalTime())<10)lcd.print("0");
   lcd.print(convertToDisMins(currentIntervalTime()));
   lcd.print(":");
+  if(convertToDisSecs(currentIntervalTime())<10)lcd.print("0");
   lcd.print(convertToDisSecs(currentIntervalTime()));
  }
  
@@ -233,9 +243,9 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.print("Step:");
   switch(currentBrewStage())
   {
-   case strike:lcd.print("Strike");break;
-   case wort:lcd.print("Wort");break;
-   case mash:lcd.print("Mash"); break;
+   case strike:lcd.print("Strike     ");break;
+   case wort:lcd.print("Wort         ");break;
+   case mash:lcd.print("Mash         "); break;
   }
   
   lcd.setCursor(0,3);

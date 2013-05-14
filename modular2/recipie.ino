@@ -14,6 +14,7 @@ static double wortTemp = 100;
 static int currentHopStep = 1;
 static int numOfHopSteps = 3;
 static boolean waitFlag = false;
+static int lastSeco = 0;
 
 //////////
 //MASH FUNCTIONS
@@ -78,12 +79,18 @@ unsigned int currentIntervalTime()
 }
 
 boolean isTimeForHops()
-{
+{  
+  if(lastSeco<getElapsed())
+  {
+    waitFlag = false;
+  }
+  
   int i;
   for(i=0; i<3; i++)
   {
    if(hopAdditionIntervals[i]==getElapsed() && !waitFlag)
    {
+    lastSeco = getElapsed();
     waitFlag = true;
     //pour them hops in!
     currentHopStep++;
