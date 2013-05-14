@@ -33,10 +33,10 @@ void startTempControl()
 }
 
 
-void PIDLoop(double temp,int pin) {
+void PIDLoop(double temp,int pin,int vessel) {
   holdTemp = temp;
   
-   float fTemp = getTempF(getTemp());   
+   float fTemp = getTempF(getTempNew(vessel));   
 
     total= total - readings[index]; 
     float temperature = fTemp;

@@ -1,13 +1,58 @@
 #include <OneWire.h> 
+#include <DallasTemperature.h>
 
 //inport Pins
 extern const int DS18S20_Pin;//DS18S20 Signal pin on digital 7
+extern const int spargeVesselTemp;
+extern const int mashVesselTemp;
+extern const int wortVesselTemp;
+
 
 //Temperature chip i/o
 OneWire ds(DS18S20_Pin);  // on digital pin 2
 
+// Pass our oneWire reference to Dallas Temperature. 
+ DallasTemperature sensors(&ds);
+
+// arrays to hold device addresses
+  DeviceAddress spargeTherm, mashTherm, wortTherm;
+
 void setupTempSensor(void) {
   Serial.begin(9600);
+  sensors.begin();
+   // locate devices on the bus
+  Serial.print("Locating devices...");
+  Serial.print("Found ");
+  Serial.print(sensors.getDeviceCount(), DEC);
+  Serial.println(" devices.");
+
+  // report parasite power requirements
+  Serial.print("Parasite power is: "); 
+  if (sensors.isParasitePowerMode()) Serial.println("ON");
+  else Serial.println("OFF");
+  
+   ds.reset_search();
+  if (!ds.search(spargeTherm)) Serial.println("Unable to find address for spargeTherm");
+  if (!ds.search(mashTherm)) Serial.println("Unable to find address for mashTherm");
+  if (!ds.search(wortTherm)) Serial.println("Unable to find address for wortTherm");
+
+  
+}
+
+float getTempNew(int vessel)
+{
+   sensors.requestTemperatures();
+   switch(vessel)
+   {
+    case spargeVesselTemp:
+        float tempC = sensors.getTempC(spargeTherm);
+    case mashVesselTemp:
+        float tempC = sensors.getTempC(mashTherm);
+    case:wortVesselTemp:
+        float tempC = sensors.getTempC(wortTherm);
+   }
+   float tempC = sensors.getTempC(spargeTherm);
+   return tempC;
 }
 
 //for testing

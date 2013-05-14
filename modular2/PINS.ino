@@ -10,6 +10,10 @@ extern const int buttonRight = 52;
 extern const int buttonLeft  = 46;    
 extern const int buttonUp    = 50;    
 extern const int buttonDown  = 48;    
+extern const int spargeVesselTemp = 70;
+extern const int mashVesselTemp = 71;
+extern const int wortVesselTemp = 72;
+
 
 void setupPins()
 {

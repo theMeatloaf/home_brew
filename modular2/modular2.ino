@@ -1,9 +1,13 @@
+#include <DallasTemperature.h>
+
+
 //define brew cases
 #define mash 0
 #define wort 1
 
 
-//inport Pins
+
+//inport global Vars
 extern const int outlet1;
 
 unsigned int last = 0;
@@ -37,7 +41,7 @@ void loop()
   {
        case mash:
        {
-         if(HoldTempDone())
+         if(HoldTempDone(0))
           {
             if(moveToNextMashStep())
             {
@@ -53,7 +57,7 @@ void loop()
        }
        case wort:
        {
-        if(HoldTempDone()) while(1); 
+        if(HoldTempDone(0)) while(1); 
         
         if(isTimeForHops())
         {

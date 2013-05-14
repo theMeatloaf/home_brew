@@ -2,6 +2,10 @@
  static unsigned int elapSecs, lastSec, finalSecs, thisSec;
  static int displayHours, displayMins, displaySecs, controlPin, displayHoursF, displayMinsF, displaySecsF;
  static double temp;
+ 
+ //inport golbal vars
+ extern DeviceAddress spargeTherm, mashTherm, wortTherm; 
+
 
 void SetupHoldTemp(int inputPin, double tempy, unsigned int totalSecs)
 {
@@ -40,7 +44,7 @@ void SetupHoldTemp(int inputPin, double tempy, unsigned int hours, unsigned int 
   finalSecs = (hours*60*60)+(mins*60)+(secs);
 }
 
-boolean HoldTempDone()
+boolean HoldTempDone(int vessel)
 {  
   if(elapSecs < finalSecs)
   {   
@@ -50,7 +54,7 @@ boolean HoldTempDone()
       lastSec = thisSec;//increment last
       elapSecs++;
     }
-    PIDLoop(temp,controlPin);//hold temp at F temp
+    PIDLoop(temp, controlPin, vessel);//hold temp at F temp
     return false;
   }else
   {
