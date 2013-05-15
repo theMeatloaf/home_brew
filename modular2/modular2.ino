@@ -4,6 +4,7 @@
 extern const int mash = 1;
 extern const int wort = 2;
 extern const int strike = 0;
+extern const int strike = 3;
 
 //inport global Vars
 extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, motorRelay;
@@ -74,14 +75,17 @@ void loop()
     
        case mash:
        {
+          //check if should open or close valve
+          
+         
          if(HoldTempDone(spargeVesselTemp))
           {
             if(moveToNextMashStep())
             {
-              //setup next mashStep
+              //setup next mashStep temp control
               SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10);
               
-              //need to pour some in...
+              //need check if should open valve
               
               //turn on/off motor
               if(motorIsOn())
@@ -99,9 +103,17 @@ void loop()
               brewStage = wort;
               last = 0;
             }
-          }
+           }
+                    
          break;
        }
+       
+       case sparge:
+       {
+        
+        break; 
+       }
+       
        case wort:
        {
         if(HoldTempDone(wortVesselTemp)) while(1); 
