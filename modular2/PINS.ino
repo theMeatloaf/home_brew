@@ -11,6 +11,8 @@ extern const int buttonRight = 52;
 extern const int buttonLeft  = 46;    
 extern const int buttonUp    = 50;    
 extern const int buttonDown  = 48;  
+extern const int motorRelay  = 2;  
+
 
 
 void setupPins()
@@ -19,6 +21,7 @@ void setupPins()
   pinMode(buttonLeft, INPUT);
   pinMode(buttonUp, INPUT);
   pinMode(buttonDown, INPUT);
- pinMode(outlet1, OUTPUT);     
- 
+  pinMode(outlet1, OUTPUT);  
+  pinMode(outlet2, OUTPUT);     
+  pinMode(motorRelay, OUTPUT);
 }

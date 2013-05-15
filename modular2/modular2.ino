@@ -6,7 +6,7 @@ extern const int wort = 2;
 extern const int strike = 0;
 
 //inport global Vars
-extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike;
+extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, motorRelay;
 
 unsigned int last = 0;
 static int brewStage = strike;
@@ -80,12 +80,23 @@ void loop()
             {
               //setup next mashStep
               SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10);
+              
+              //need to pour some in...
+              
+              //turn on/off motor
+              if(motorIsOn())
+              {
+                digitalWrite(motorRelay,HIGH);
+              }else
+              {
+                digitalWrite(motorRelay,LOW); 
+              }
               last = 0;
             }else
             {
               currentOutlet = outlet2;
               SetupHoldTemp(currentOutlet,wortGoalTemp(),1000);
-              brewStage=wort;
+              brewStage = wort;
               last = 0;
             }
           }
@@ -94,11 +105,14 @@ void loop()
        case wort:
        {
         if(HoldTempDone(wortVesselTemp)) while(1); 
-        
-        if(isTimeForHops())
+        else
         {
-               //pour in the hops yo! 
+                  if(isTimeForHops())
+                  {
+                  //pour in the hops yo! 
+                  }
         }
+
         break;
        }
        

@@ -10,7 +10,7 @@ static boolean mashMotorStates[20] = {false,false,true,false};
 //wort variables
 static unsigned int wortTotalSecs = 3600;
 static unsigned int hopAdditionIntervals[3]= {10,20,30};
-static double wortTemp = 100;
+static float wortTemp = 100;
 static int currentHopStep = 1;
 static int numOfHopSteps = 3;
 static boolean waitFlag = false;
@@ -58,7 +58,7 @@ double getCurrentMashTemp(int i)
 
 
 //WORT FUNCTIONS//
-double wortGoalTemp()
+float wortGoalTemp()
 {
   return wortTemp; 
 }

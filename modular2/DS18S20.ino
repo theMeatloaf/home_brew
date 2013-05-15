@@ -18,11 +18,14 @@ void setupTempSensor(void) {
   Serial.begin(9600);
   
    ds.reset_search();
-  if (!ds.search(spargeTherm)) Serial.println("Unable to find address for spargeTherm");
   if (!ds.search(mashTherm)) Serial.println("Unable to find address for mashTherm");
-  if (!ds.search(wortTherm)) Serial.println("Unable to find address for wortTherm");
+  if(!ds.search(wortTherm)) Serial.println("Unable to find address for wortTherm");
+  if (!ds.search(spargeTherm)) Serial.println("Unable to find address for spargeTherm");
 
-  
+  getTempNew(spargeVesselTemp);
+  getTempNew(mashVesselTemp);
+  getTempNew(wortVesselTemp);
+
 }
 
 float getTempNew(int vessel)

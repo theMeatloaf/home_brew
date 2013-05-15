@@ -114,7 +114,7 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.print(getHoldTemp());
   
   lcd.print(" Heat:");
-  if(isHeatOn())lcd.print("ON ");
+  if(isHeatOn() && currentBrewStage()==strike)lcd.print("ON ");
   else lcd.print("OFF");
  }
  
@@ -162,8 +162,8 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   else lcd.print("OFF ");
   
   lcd.print("temp:");
-  //TODO: MAKE IT GET THE DIFFERENT TEMP
   lcd.print((int)getTempF(getTempNew(mashVesselTemp)));
+  lcd.print("  ");
  }
  
  void displayWortLCD()
