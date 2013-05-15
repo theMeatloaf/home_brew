@@ -1,11 +1,18 @@
 //temporary hard coded recipie values
 
 //mash variables
+#define maxMashes 10
+
 static int numberOfMashSteps = 4;
 static int numberOfHopAdditions = 3;
 static int currentMashStep = 0;
-static float mashTemps[20] = {90,80,90,80};
-static boolean mashMotorStates[20] = {false,false,true,false};
+static float mashTemps[maxMashes] = {90,80,90,80};
+static boolean mashMotorStates[maxMashes] = {false,false,true,false};
+static float mashAmmounts[maxMashes] = {5,5,5,5};
+//vavle time vars 
+static unsigned int valveOpenSecs = 0;
+static unsigned int thisValveSec = 0;
+static unsigned int lastValveSec = 0;
 
 //wort variables
 static unsigned int wortTotalSecs = 3600;
@@ -15,6 +22,7 @@ static int currentHopStep = 1;
 static int numOfHopSteps = 3;
 static boolean waitFlag = false;
 static int lastSeco = 0;
+
 
 //////////
 //MASH FUNCTIONS
@@ -45,13 +53,42 @@ boolean moveToNextMashStep()
   }
 }
 
+float getMashAmmount(int i)
+{
+ return mashAmmounts[i]; 
+}
+
+void resetValveCounters()
+{
+  thisValveSec = 0;
+  lastValveSec= 0;
+  valveOpenSecs = 0;
+}
+
+//function for valve function
+boolean valveTimeDone()
+{  
+  if(valveOpenSecs < mashAmmounts[currentMashStep])
+  {   
+  thisValveSec = (millis()/1000);
+  if(thisValveSec > lastValveSec)//if second has passed...display
+    {
+      lastValveSec = thisValveSec;//increment last
+      valveOpenSecs++;
+    }
+    return false;
+  }else
+  {
+  return true;  
+  }
+}
 
 boolean motorIsOn()
 {
  return mashMotorStates[currentMashStep];
 }
 
-double getCurrentMashTemp(int i)
+float getCurrentMashTemp(int i)
 {
   return mashTemps[i];
 }

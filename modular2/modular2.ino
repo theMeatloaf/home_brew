@@ -4,7 +4,7 @@
 extern const int mash = 1;
 extern const int wort = 2;
 extern const int strike = 0;
-extern const int strike = 3;
+extern const int sparge = 3;
 
 //inport global Vars
 extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, motorRelay;
@@ -62,55 +62,83 @@ void loop()
        case strike:
        {
            HoldTempDone(spargeVesselTemp);
-           if(getTempF(getTempNew(spargeVesselTemp)) > getHoldTemp())
+
+           //check if valve is currently open and act acordinly (setup next mash or continue keeping it hang)
+           if(spargeValveIsOpen())
            {
-             //need to open valve now for time
-             moveToNextMashStep();
-             SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10);
-             brewStage = mash;
-             last = 0;
+                 if(valveTimeDone())
+                  {
+                  //close valve
+                  closeSpargeValve(); 
+                  //setup next temp control
+                  moveToNextMashStep();
+                  SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10);
+                  brewStage = mash;
+                  last = 0;
+                  }
+           }else if(getTempF(getTempNew(spargeVesselTemp)) > getHoldTemp())
+           {
+               //need to open valve now
+               openSpargeValve();
            }
            break;
        }
     
        case mash:
        {
-          //check if should open or close valve
-          
-         
-         if(HoldTempDone(spargeVesselTemp))
-          {
+          //check if valve is currently open and either just keep holding temp and keep open, or close and go to next mash step
+          if(spargeValveIsOpen())
+           {
+               //keep holding temp
+               HoldTempDone(spargeVesselTemp);
+                if(valveTimeDone())
+                 {
+                   //setup next mashStep temp control
+                   SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10); 
+                   
+                    //turn on/off motor
+                    if(motorIsOn())
+                    {
+                      digitalWrite(motorRelay,HIGH);
+                    }else
+                    {
+                      digitalWrite(motorRelay,LOW); 
+                    }
+                    last = 0;
+                 }//else chill 
+           }else if(HoldTempDone(spargeVesselTemp))
+           {
             if(moveToNextMashStep())
             {
-              //setup next mashStep temp control
-              SetupHoldTemp(currentOutlet,getCurrentMashTemp(),10);
-              
               //need check if should open valve
-              
-              //turn on/off motor
-              if(motorIsOn())
+              if(getMashAmmount(getCurrentMashStep())>0)
               {
-                digitalWrite(motorRelay,HIGH);
-              }else
-              {
-                digitalWrite(motorRelay,LOW); 
+               openSpargeValve();
+               break;
               }
-              last = 0;
-            }else
-            {
-              currentOutlet = outlet2;
-              SetupHoldTemp(currentOutlet,wortGoalTemp(),1000);
-              brewStage = wort;
-              last = 0;
-            }
-           }
-                    
+              
+             }else
+             {
+              //open mash valve
+              
+              
+              brewStage = sparge;
+             }
+           }         
          break;
        }
        
        case sparge:
        {
+        //check for when valse its done and then do wort ish
         
+        //else
+        {
+              currentOutlet = outlet2;
+              SetupHoldTemp(currentOutlet,wortGoalTemp(),1000);
+              brewStage = wort;
+              last = 0;
+        }
         break; 
        }
        

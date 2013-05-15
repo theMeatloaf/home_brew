@@ -6,7 +6,7 @@ extern const int lcdP4;
 extern const int lcdP5;
 extern const int lcdP6;
 
-extern const int spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike;
+extern const int spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, sparge;
 
 //TODO: ONLY MAKE TIME DISPLAY WHEN ITS ON THAT STEP YO
 
@@ -114,7 +114,7 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.print(getHoldTemp());
   
   lcd.print(" Heat:");
-  if(isHeatOn() && currentBrewStage()==strike)lcd.print("ON ");
+  if(isHeatOn() && (currentBrewStage()==strike || currentBrewStage()==mash || currentBrewStage() == sparge))lcd.print("ON ");
   else lcd.print("OFF");
  }
  

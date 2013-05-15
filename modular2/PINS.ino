@@ -13,6 +13,10 @@ extern const int buttonUp    = 50;
 extern const int buttonDown  = 48;  
 extern const int motorRelay  = 2;  
 
+extern const int spargeValve  = 3;  
+extern const int mashValve  = 4;  
+extern const int wortValve  = 5;  
+
 
 
 void setupPins()
@@ -24,4 +28,24 @@ void setupPins()
   pinMode(outlet1, OUTPUT);  
   pinMode(outlet2, OUTPUT);     
   pinMode(motorRelay, OUTPUT);
+  pinMode(spargeValve, OUTPUT);
+  pinMode(wortValve,OUTPUT);
+}
+
+void openSpargeValve()
+{
+  resetValveCounters();
+  //open vavle
+  digitalWrite(spargeValve,HIGH);
+}
+
+boolean spargeValveIsOpen()
+{
+ if (digitalRead(spargeValve)) return true;
+ return false;
+}
+
+void closeSpargeValve()
+{
+  digitalWrite(spargeValve,LOW);
 }
