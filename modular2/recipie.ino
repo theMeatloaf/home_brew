@@ -3,12 +3,16 @@
 //mash variables
 #define maxMashes 10
 
+//first mash step is strike conditions....so temp and ammount to be poured in...set motor OFF always!
+//last mash step temp is sparge conditions....motor off and 
 static int numberOfMashSteps = 4;
 static int numberOfHopAdditions = 3;
 static int currentMashStep = 0;
-static float mashTemps[maxMashes] = {90,80,90,80};
+static float mashTemps[maxMashes] = {90,80,90,69};
 static boolean mashMotorStates[maxMashes] = {false,false,true,false};
-static float mashAmmounts[maxMashes] = {5,5,5,5};
+static float mashAmmounts[maxMashes] = {5,5,5,7};
+//mash times
+
 //vavle time vars 
 static unsigned int valveOpenSecs = 0;
 static unsigned int thisValveSec = 0;
@@ -65,10 +69,28 @@ void resetValveCounters()
   valveOpenSecs = 0;
 }
 
-//function for valve function
-boolean valveTimeDone()
+//function for Mash valve function
+boolean mashValveTimeDone()
 {  
   if(valveOpenSecs < mashAmmounts[currentMashStep])
+  {   
+  thisValveSec = (millis()/1000);
+  if(thisValveSec > lastValveSec)//if second has passed...display
+    {
+      lastValveSec = thisValveSec;//increment last
+      valveOpenSecs++;
+    }
+    return false;
+  }else
+  {
+  return true;  
+  }
+}
+
+//general valve timer
+boolean valveTimeDone(int totalSecs)
+{
+    if(valveOpenSecs < totalSecs)
   {   
   thisValveSec = (millis()/1000);
   if(thisValveSec > lastValveSec)//if second has passed...display

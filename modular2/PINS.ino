@@ -30,12 +30,17 @@ void setupPins()
   pinMode(motorRelay, OUTPUT);
   pinMode(spargeValve, OUTPUT);
   pinMode(wortValve,OUTPUT);
+  pinMode(mashValve,OUTPUT);
+
+}
+
+void turnHeatersOff()
+{
+    digitalWrite(spargeValve,HIGH);
 }
 
 void openSpargeValve()
 {
-  resetValveCounters();
-  //open vavle
   digitalWrite(spargeValve,HIGH);
 }
 
@@ -48,4 +53,14 @@ boolean spargeValveIsOpen()
 void closeSpargeValve()
 {
   digitalWrite(spargeValve,LOW);
+}
+
+void openMashValve()
+{
+  digitalWrite(mashValve,HIGH);
+}
+
+void closeMashValve()
+{
+ digitalWrite(mashValve,LOW); 
 }

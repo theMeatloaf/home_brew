@@ -6,7 +6,7 @@ extern const int lcdP4;
 extern const int lcdP5;
 extern const int lcdP6;
 
-extern const int spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, sparge;
+extern const int spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, sparge, mashout;
 
 //TODO: ONLY MAKE TIME DISPLAY WHEN ITS ON THAT STEP YO
 
@@ -52,37 +52,6 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    lcd.print("to start Brew");
  }
  
- void displayTimeAndTempLCD()
- {
-   lcd.setCursor(0, 0);
-   lcd.print("Current Temp:");
-   //lcd.print(getTempF(getTemp()));
-   //
-   lcd.setCursor(0,1);
-   lcd.print("Goal Temp:");
-   lcd.print(getHoldTemp());
-   
-   lcd.setCursor(0,2);
-   lcd.print("time ");
-   lcd.print(getDisplayHours());
-   lcd.print(":");
-   lcd.print(getDisplayMins());
-   lcd.print(":");
-   if(getDisplaySecs()<10)lcd.print("0");
-   lcd.print(getDisplaySecs());
- }
-
-
- void displayElapsSecsLCD()
- {
-   lcd.setCursor(0,0);
-   lcd.print("Total Elapsed Secs");
-   
-   lcd.setCursor(0,1);
-   lcd.print(getElapsed());
-   lcd.print(" Seconds");
- }
- 
  void displaySpargeLCD()
  {
   lcd.setCursor(6,0);
@@ -111,10 +80,11 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   
   lcd.setCursor(0,3);
   lcd.print("Goal:");
-  lcd.print(getHoldTemp());
+  if(currentBrewStage()==strike || currentBrewStage()==mash || currentBrewStage() == sparge || currentBrewStage()==mashout) lcd.print(getHoldTemp());
+  else lcd.print("N/A");
   
   lcd.print(" Heat:");
-  if(isHeatOn() && (currentBrewStage()==strike || currentBrewStage()==mash || currentBrewStage() == sparge))lcd.print("ON ");
+  if(isHeatOn() && (currentBrewStage()==strike || currentBrewStage()==mash || currentBrewStage() == sparge) || currentBrewStage()==mashout)lcd.print("ON ");
   else lcd.print("OFF");
  }
  
@@ -203,7 +173,8 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.print(getTempF(getTempNew(wortVesselTemp)));
   
   lcd.print("Set:");
-  lcd.print(getHoldTemp());
+  if(currentBrewStage()==wort) lcd.print(getHoldTemp());
+  else lcd.print("N/A");
   
   lcd.setCursor(0,3);
   lcd.print("HOPS:");
@@ -246,6 +217,9 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    case strike:lcd.print("Strike     ");break;
    case wort:lcd.print("Wort         ");break;
    case mash:lcd.print("Mash         "); break;
+   case sparge:lcd.print("Sparge      "); break;
+   case mashout:lcd.print("Mash Out      "); break;
+
   }
   
   lcd.setCursor(0,3);

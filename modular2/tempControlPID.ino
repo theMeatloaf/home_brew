@@ -44,6 +44,17 @@ void SetupHoldTemp(int inputPin, double tempy, unsigned int hours, unsigned int 
   finalSecs = (hours*60*60)+(mins*60)+(secs);
 }
 
+void forceHoldTemp(int vessel)
+{
+  thisSec = (millis()/1000);
+  if(thisSec > lastSec)//if second has passed...display
+    {
+      lastSec = thisSec;//increment last
+      totalElapSecs++;
+    }
+    PIDLoop(temp, controlPin, vessel);//hold temp at F temp
+}
+
 boolean HoldTempDone(int vessel)
 {  
   if(elapSecs < finalSecs)
