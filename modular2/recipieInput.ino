@@ -3,6 +3,7 @@
 #define mashInputScreen 7
 #define spargeQuestionScreen 8
 #define wortInputScreen 9
+#define strikeInputScreen 10
 
 #define integerVar 1
 #define floatVar 2
@@ -13,8 +14,9 @@
 
 #define NUM_OF_MASH_INPUTS 7
 #define NUM_OF_SPARGE_INPUTS 2
+#define NUM_OF_STRIKE_INPUTS 3
 
-#define FLASH_MILLIS 500
+#define FLASH_MILLIS 400
 
 extern boolean readyToBrew;
 
@@ -29,7 +31,7 @@ static recipie inputRecipie;
 //recipie temp vars
 static unsigned int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
-static float tempMashTemp;
+static float tempMashTemp,tempMashAmmount;
 static boolean tempMashMotorOn,tempMoreMashSteps;
 
 //screen struct
@@ -52,9 +54,9 @@ static screen currentScreen;
 static int curEdit=0;
 
 //screen defs
-screen mashScreen, spargeQuestScreen;
+screen mashScreen, strikeScreen, spargeQuestScreen;
 
-//mash hardcoded loactions
+//mash screen hardcoded vars
 int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,6,10};
 int mashCollumnLocations[NUM_OF_MASH_INPUTS] = {0,1,1,1,2,3,3};
 int mashVarTypes[NUM_OF_MASH_INPUTS] = {2,1,1,1,3,4,6};
@@ -63,6 +65,14 @@ float * mashVarFloatVars[NUM_OF_MASH_INPUTS] = {&tempMashTemp,0,0,0,0,0,0};
 unsigned int * mashVarIntVars[NUM_OF_MASH_INPUTS] = {0, &tempMashHours,&tempMashMins,&tempMashSecs,0,0,0};
 boolean * mashOnOffVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,&tempMashMotorOn,0,0};
 boolean * mashYesNoVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,0,&tempMoreMashSteps,0};
+
+//strike screen hardcoded vars
+int strikeRowLocations[NUM_OF_STRIKE_INPUTS] = {5,8,0};
+int strikeCollumnLocations[NUM_OF_STRIKE_INPUTS] = {1,2,3};
+int strikeVarTypes[NUM_OF_STRIKE_INPUTS] = {floatVar,floatVar,doneVar};
+int strikeVarWidths[NUM_OF_STRIKE_INPUTS] = {6,6,5};
+float * strikeVarFloatVars[NUM_OF_STRIKE_INPUTS] = {&tempMashTemp,&tempMashAmmount,0,};
+
 
 
 //sparge Q screen locations
@@ -85,6 +95,15 @@ void populateScreenVars()
      mashScreen.yesNoVars[i] = mashYesNoVars[i];
   }
   
+  strikeScreen.id = strikeInputScreen; 
+  for(i=0; i<NUM_OF_STRIKE_INPUTS; i++)
+  {
+    strikeScreen.locationRows[i] = strikeRowLocations[i];
+    strikeScreen.locationCollums[i] = strikeCollumnLocations[i];
+    strikeScreen.varTypes[i] = strikeVarTypes[i];
+    strikeScreen.varWidths[i] = strikeVarWidths[i];
+    strikeScreen.floatVars[i] = strikeVarFloatVars[i];
+  }
   
  /* for(i=0; i<NUM_OF_SPARGE_INPUTS; i++)
   {
@@ -93,7 +112,7 @@ void populateScreenVars()
   }*/
 
   //initialize currentScreen
-  currentScreen = mashScreen;
+  currentScreen = strikeScreen;
 }
 
 
@@ -185,7 +204,9 @@ int currentVarType()
 
 void printCurInputScreen()
 {   
-        if(currentScreen.id == mashInputScreen)
+    switch(currentScreen.id)
+    {
+        case mashInputScreen:
         {
            lcd.setCursor(0,0);
            lcd.print("#");
@@ -212,7 +233,23 @@ void printCurInputScreen()
            if(tempMoreMashSteps)lcd.print("YES");
            else lcd.print("NO ");
            lcd.print(" DONE?");
+           break;
          } 
+         case strikeInputScreen:
+         {
+           lcd.setCursor(6,0);
+           lcd.print("STRIKE:");
+           lcd.setCursor(0,1);
+           lcd.print("TEMP:");
+           lcd.print(tempMashTemp);
+           lcd.setCursor(0,2);
+           lcd.print("Ammount:");
+           lcd.print(tempMashAmmount);
+           lcd.setCursor(0,3);
+           lcd.print("DONE?");
+           break;
+         }
+    }  
 }
 
 int currentRow()
@@ -235,7 +272,7 @@ void moveSelectionRight()
     if(currentVarType() == doneVar)
     {
      //need to go to next Screen
-        Serial.print("NEXT SCREEN!"); 
+        screenDone();
         return;
     }
   curEdit++;
@@ -243,6 +280,11 @@ void moveSelectionRight()
 
 void moveSelectionLeft()
 {
+  if(curEdit==0)
+  {
+    screenBack();
+    return;
+  }
   curEdit--;
 }
 
@@ -250,7 +292,7 @@ void increaseSelection()
 {  
        if(currentVarType() == floatVar)
        {
-         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]+0.5;
+         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]+0.25;
        }
        if(currentVarType() == integerVar)
        {
@@ -268,9 +310,9 @@ void increaseSelection()
 
 void decreaseSelection()
 {
-       if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0.5)
+       if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0.25)
        {
-         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]-0.5;
+         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]-0.25;
        }
        if(currentVarType() == integerVar && *currentScreen.intVars[curEdit]>0)
        {
@@ -286,4 +328,40 @@ void decreaseSelection()
        }
 }
 
+void screenDone()
+{
+ switch(currentScreen.id) 
+  {
+   case strikeInputScreen:
+   {
+     inputRecipie.mashTemps[0] = tempMashTemp;
+     inputRecipie.mashAmmounts[0] = tempMashAmmount;
+     inputRecipie.mashMotorStates[0] = false;
+     inputRecipie.mashTimes[0] = 4294967294;//max Time
+     if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
+     curEdit= 0;
+     lcd.clear();
+     tempMashTemp = 0;
+     tempMashAmmount = 0;
+     currentScreen = mashScreen;
+     break;
+   } 
+  } 
+}
+
+void screenBack()
+{
+   switch(currentScreen.id) 
+  {
+   case mashInputScreen:
+   {
+     tempMashTemp = inputRecipie.mashTemps[0];
+     tempMashAmmount = inputRecipie.mashAmmounts[0];
+     curEdit = 0;
+     lcd.clear();
+     currentScreen = strikeScreen;
+     break;
+   } 
+  } 
+}
 
