@@ -13,13 +13,13 @@ static int lastSeco = 0;
 
 struct recipie{
  //first mash step is strike conditions....so temp and ammount to be poured in...set motor OFF always!
- //last mash step temp is sparge conditions....motor off and 
+ //last mash step temp is sparge conditions...so temp for sparge...ammount held in diff Variable
  int numberOfMashSteps;
  int numberOfHopAdditions;
  float mashTemps[maxMashes];
  boolean mashMotorStates[maxMashes];
  float mashAmmounts[maxMashes];
-//needd mash times
+ unsigned int mashTimes[maxMashes];
  unsigned int spargeTime;
  unsigned int wortTotalSecs;
  unsigned int hopAdditionIntervals[3];
