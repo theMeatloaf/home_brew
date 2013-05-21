@@ -232,6 +232,12 @@ int curLength()
 
 void moveSelectionRight()
 {
+    if(currentVarType() == doneVar)
+    {
+     //need to go to next Screen
+        Serial.print("NEXT SCREEN!"); 
+        return;
+    }
   curEdit++;
 }
 
@@ -257,11 +263,6 @@ void increaseSelection()
        if(currentVarType() == yes_noVar)
        {
          *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
-       }
-       if(currentVarType() == doneVar)
-       {
-        //need to go to next Screen
-        Serial.print("NEXT SCREEN!"); 
        }
 }
 
