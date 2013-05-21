@@ -7,6 +7,8 @@ extern const int strike = 0;
 extern const int sparge = 3;
 extern const int mashout = 4;
 
+//most important flag!
+extern boolean readyToBrew = false;
 
 //inport global Vars
 extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, motorRelay;
@@ -18,8 +20,13 @@ static int currentOutlet;
 
 void setup()
 {
+ Serial.begin(9600);
+  
  setupPins();
  setupLCD();
+ 
+ //init input Screens
+ populateScreenVars();
  
  //display start screen
  displayBootScreen();
@@ -27,10 +34,13 @@ void setup()
  currentOutlet = outlet1;
  setupTempController(); 
  
- int ButtonValue;
- while(ButtonValue != 1)
+ //recipie for Testing
+ setupTestRecipie();
+ 
+ while(!readyToBrew)
  {
-  ButtonValue = Buttonloop();
+   //say in here unless its really ready to brew!
+   inputRecipieLoop();
  }
  
  //start Brew
@@ -87,6 +97,7 @@ void loop()
        
        case wort:
        {
+         openWortValve();
         if(HoldTempDone(wortVesselTemp)) while(1); 
         else
         {
@@ -131,7 +142,7 @@ void spargeCase()
          
         //check for when valse its done and then do wort ish
         //NEED SPARGE AMMOUNT HERE
-        if(valveTimeDone(getMashAmmount(getCurrentMashStep())))
+        if(valveTimeDone(getSpargeTime()))
         {
               closeMashValve();
               closeSpargeValve();

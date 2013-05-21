@@ -46,10 +46,10 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    
    changeScreens();
 
-   lcd.setCursor(2,1);
+/*   lcd.setCursor(2,1);
    lcd.print("Please Press Up");
    lcd.setCursor(3,2);
-   lcd.print("to start Brew");
+   lcd.print("to start Brew");*/
  }
  
  void displaySpargeLCD()

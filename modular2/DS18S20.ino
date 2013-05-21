@@ -14,9 +14,7 @@ OneWire ds(DS18S20_Pin);  // on digital pin 2
 // arrays to hold device addresses
   DeviceAddress spargeTherm, mashTherm, wortTherm;
 
-void setupTempSensor(void) {
-  Serial.begin(9600);
-  
+void setupTempSensor(void) {  
    ds.reset_search();
   if (!ds.search(mashTherm)) Serial.println("Unable to find address for mashTherm");
   if(!ds.search(wortTherm)) Serial.println("Unable to find address for wortTherm");

@@ -9,7 +9,10 @@ int buttonStateDown;
 int buttonStateLeft;             
 int buttonStateRight;      
 
-const int numOfReturn = 1;
+unsigned int holdCounter;
+
+//costant number of ocun
+static int numOfReturn = 1;
 
 int lastButtonStateUP = LOW;   
 int lastButtonStateDOWN = LOW;  
@@ -113,5 +116,29 @@ int Buttonloop() {
   return -1;
 }
 
+int ButtonloopRepeate()
+{
+  numOfReturn = 32,766;
+ int curButtValue = Buttonloop();
+ if (curButtValue == 1 || curButtValue == 2)
+ {
+   Serial.print("BUTTON PRESSED!!!");
+   
+   holdCounter++;
+   if(holdCounter == 1)
+   {
+    return curButtValue; 
+   }
+   if(holdCounter>200)
+   {
+    return curButtValue; 
+   }
+ }else
+ {
+  holdCounter = 0; 
+ }
+ 
+ return -1;
+}
 
 

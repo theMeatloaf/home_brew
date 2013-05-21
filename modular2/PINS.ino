@@ -13,8 +13,8 @@ extern const int buttonUp    = 50;
 extern const int buttonDown  = 48;  
 extern const int motorRelay  = 2;  
 
-extern const int spargeValve  = 3;  
-extern const int mashValve  = 4;  
+extern const int spargeValve  = 4;  
+extern const int mashValve  = 3;  
 extern const int wortValve  = 5;  
 
 
@@ -63,4 +63,14 @@ void openMashValve()
 void closeMashValve()
 {
  digitalWrite(mashValve,LOW); 
+}
+
+void openWortValve()
+{
+ digitalWrite(wortValve,HIGH); 
+}
+
+void closeWortValve()
+{
+ digitalWrite(wortValve,LOW); 
 }

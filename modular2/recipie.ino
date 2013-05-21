@@ -1,38 +1,70 @@
-//temporary hard coded recipie values
 
 //mash variables
 #define maxMashes 10
 
-//first mash step is strike conditions....so temp and ammount to be poured in...set motor OFF always!
-//last mash step temp is sparge conditions....motor off and 
-static int numberOfMashSteps = 4;
-static int numberOfHopAdditions = 3;
-static int currentMashStep = 0;
-static float mashTemps[maxMashes] = {90,80,90,69};
-static boolean mashMotorStates[maxMashes] = {false,false,true,false};
-static float mashAmmounts[maxMashes] = {5,5,5,7};
-//mash times
-
-//vavle time vars 
+//static counters and flags;
 static unsigned int valveOpenSecs = 0;
 static unsigned int thisValveSec = 0;
 static unsigned int lastValveSec = 0;
-
-//wort variables
-static unsigned int wortTotalSecs = 3600;
-static unsigned int hopAdditionIntervals[3]= {10,20,30};
-static float wortTemp = 100;
 static int currentHopStep = 1;
-static int numOfHopSteps = 3;
+static int currentMashStep = 0;
 static boolean waitFlag = false;
 static int lastSeco = 0;
 
+struct recipie{
+ //first mash step is strike conditions....so temp and ammount to be poured in...set motor OFF always!
+ //last mash step temp is sparge conditions....motor off and 
+ int numberOfMashSteps;
+ int numberOfHopAdditions;
+ float mashTemps[maxMashes];
+ boolean mashMotorStates[maxMashes];
+ float mashAmmounts[maxMashes];
+//needd mash times
+ unsigned int spargeTime;
+ unsigned int wortTotalSecs;
+ unsigned int hopAdditionIntervals[3];
+ float wortTemp;
+ int numOfHopSteps;
+};
+
+//this recipie
+static recipie curRecipie;
+
+void setCurrentRecipie(struct recipie inputRecipie)
+{
+ curRecipie = inputRecipie; 
+}
+
+void setupTestRecipie()
+{
+curRecipie.numberOfMashSteps = 4;
+curRecipie.numberOfHopAdditions = 3;
+curRecipie.mashTemps[0] = 60;
+curRecipie.mashTemps[1] = 80;
+curRecipie.mashTemps[2] = 90;
+curRecipie.mashTemps[3] = 69;
+curRecipie.mashMotorStates[0] = false;
+curRecipie.mashMotorStates[1] = false;
+curRecipie.mashMotorStates[2] = true;
+curRecipie.mashMotorStates[3] = false;
+curRecipie.mashAmmounts[0] = 5;
+curRecipie.mashAmmounts[1] = 5;
+curRecipie.mashAmmounts[2] = 5;
+curRecipie.mashAmmounts[3] = 7;
+curRecipie.spargeTime = 8;
+curRecipie.wortTotalSecs = 3600;
+curRecipie.hopAdditionIntervals[0] = 10;
+curRecipie.hopAdditionIntervals[1] = 20;
+curRecipie.hopAdditionIntervals[2] = 30;
+curRecipie.wortTemp = 100;
+curRecipie.numOfHopSteps = 3;
+}
 
 //////////
 //MASH FUNCTIONS
 int getNumberOfMashSteps()
 {
-  return numberOfMashSteps; 
+  return curRecipie.numberOfMashSteps; 
 }
 
 int getCurrentMashStep()
@@ -42,12 +74,12 @@ int getCurrentMashStep()
 
 float getCurrentMashTemp()
 {
-  return mashTemps[currentMashStep];
+  return curRecipie.mashTemps[currentMashStep];
 }
 
 boolean moveToNextMashStep()
 {
- if(currentMashStep == numberOfMashSteps-1)
+ if(currentMashStep == curRecipie.numberOfMashSteps-1)
   {
    return false;
   }else
@@ -59,7 +91,7 @@ boolean moveToNextMashStep()
 
 float getMashAmmount(int i)
 {
- return mashAmmounts[i]; 
+ return curRecipie.mashAmmounts[i]; 
 }
 
 void resetValveCounters()
@@ -72,7 +104,7 @@ void resetValveCounters()
 //function for Mash valve function
 boolean mashValveTimeDone()
 {  
-  if(valveOpenSecs < mashAmmounts[currentMashStep])
+  if(valveOpenSecs < curRecipie.mashAmmounts[currentMashStep])
   {   
   thisValveSec = (millis()/1000);
   if(thisValveSec > lastValveSec)//if second has passed...display
@@ -85,6 +117,11 @@ boolean mashValveTimeDone()
   {
   return true;  
   }
+}
+
+unsigned int getSpargeTime()
+{
+ return curRecipie.spargeTime; 
 }
 
 //general valve timer
@@ -107,19 +144,19 @@ boolean valveTimeDone(int totalSecs)
 
 boolean motorIsOn()
 {
- return mashMotorStates[currentMashStep];
+ return curRecipie.mashMotorStates[currentMashStep];
 }
 
 float getCurrentMashTemp(int i)
 {
-  return mashTemps[i];
+  return curRecipie.mashTemps[i];
 }
 
 
 //WORT FUNCTIONS//
 float wortGoalTemp()
 {
-  return wortTemp; 
+  return curRecipie.wortTemp; 
 }
 
 int currentHopsStep()
@@ -129,12 +166,12 @@ int currentHopsStep()
 
 int totalHopsSteps()
 {
- return  numOfHopSteps;
+ return  curRecipie.numOfHopSteps;
 }
 
 unsigned int currentIntervalTime()
 {
- return  hopAdditionIntervals[currentHopStep-1];
+ return  curRecipie.hopAdditionIntervals[currentHopStep-1];
 }
 
 boolean isTimeForHops()
@@ -147,7 +184,7 @@ boolean isTimeForHops()
   int i;
   for(i=0; i<3; i++)
   {
-   if(hopAdditionIntervals[i]==getElapsed() && !waitFlag)
+   if(curRecipie.hopAdditionIntervals[i]==getElapsed() && !waitFlag)
    {
     lastSeco = getElapsed();
     waitFlag = true;
