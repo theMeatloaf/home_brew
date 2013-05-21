@@ -23,10 +23,6 @@ unsigned int lastFlashInt = millis()/FLASH_MILLIS;
 unsigned int thisFlashInt;
 int i;
 
-//screen and edit counters
-static int currentScreen = mashInputScreen;
-static int curEdit=0;
-
 //recipie struct to populate
 static recipie inputRecipie;
 
@@ -34,12 +30,12 @@ static recipie inputRecipie;
 static unsigned int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
 static float tempMashTemp;
-static boolean tempMashMotorOn;
+static boolean tempMashMotorOn,tempMoreMashSteps;
 
 //screen struct
 struct screen
 {
-  int numOfInputs;
+  int id;
   int locationRows[maxScreenValues];
   int locationCollums[maxScreenValues];
   //what each var type is....1 is int, 2 is float, 3 is off/on, 4 is yes/no, 5 is swap bool, 6 is DONE
@@ -47,8 +43,13 @@ struct screen
   float * floatVars[maxScreenValues];
   unsigned int * intVars[maxScreenValues];
   boolean * onOffVars[maxScreenValues];
+  boolean * yesNoVars[maxScreenValues];
   int varWidths[maxScreenValues];
 };
+
+//screen and edit counters
+static screen currentScreen;
+static int curEdit=0;
 
 //screen defs
 screen mashScreen, spargeQuestScreen;
@@ -57,10 +58,11 @@ screen mashScreen, spargeQuestScreen;
 int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,6,10};
 int mashCollumnLocations[NUM_OF_MASH_INPUTS] = {0,1,1,1,2,3,3};
 int mashVarTypes[NUM_OF_MASH_INPUTS] = {2,1,1,1,3,4,6};
-int mashVarWidths[NUM_OF_MASH_INPUTS] = {6,2,2,2,3,3,3};
+int mashVarWidths[NUM_OF_MASH_INPUTS] = {6,2,2,2,3,3,5};
 float * mashVarFloatVars[NUM_OF_MASH_INPUTS] = {&tempMashTemp,0,0,0,0,0,0};
 unsigned int * mashVarIntVars[NUM_OF_MASH_INPUTS] = {0, &tempMashHours,&tempMashMins,&tempMashSecs,0,0,0};
 boolean * mashOnOffVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,&tempMashMotorOn,0,0};
+boolean * mashYesNoVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,0,&tempMoreMashSteps,0};
 
 
 //sparge Q screen locations
@@ -70,6 +72,7 @@ int spargeCollumnLocations[NUM_OF_SPARGE_INPUTS] = {1,3};
 void populateScreenVars()
 {   
   //mash defenitons
+  mashScreen.id = mashInputScreen;
   for(i=0; i<NUM_OF_MASH_INPUTS; i++)
   {
      mashScreen.locationRows[i] = mashRowLocations[i];
@@ -79,6 +82,7 @@ void populateScreenVars()
      mashScreen.floatVars[i] = mashVarFloatVars[i];
      mashScreen.intVars[i] = mashVarIntVars[i];
      mashScreen.onOffVars[i] = mashOnOffVars[i];
+     mashScreen.yesNoVars[i] = mashYesNoVars[i];
   }
   
   
@@ -87,6 +91,9 @@ void populateScreenVars()
     spargeQuestScreen.locationRows[i] = spargeRowsLocations[i];
     spargeQuestScreen.locationCollums[i] = spargeCollumnLocations[i];
   }*/
+
+  //initialize currentScreen
+  currentScreen = mashScreen;
 }
 
 
@@ -157,43 +164,28 @@ void inputRecipieLoop()
 }
 
 void printCurEditValue()
-{
-  switch(currentScreen)
-  {
-   case mashInputScreen:
-   {
+{ 
      if(currentVarType() == floatVar)
      {
-      lcd.print(*mashScreen.floatVars[curEdit]);
+      lcd.print(*currentScreen.floatVars[curEdit]);
      }else if(currentVarType() == integerVar)
      {
       for(i=0; i<curLength(); i++)
       {
-       if(*mashScreen.intVars[curEdit]<(i*10))lcd.print("0"); 
+       if(*currentScreen.intVars[curEdit]<(i*10))lcd.print("0"); 
       }
-      lcd.print(*mashScreen.intVars[curEdit]); 
-     }
-   } 
-  }
+      lcd.print(*currentScreen.intVars[curEdit]); 
+     } 
 }
 
 int currentVarType()
 {
-   switch(currentScreen)
-  {
-   case mashInputScreen:
-   {
-     return mashScreen.varTypes[curEdit]; 
-   }
-   //cases////
-  } 
+     return currentScreen.varTypes[curEdit];  
 }
 
 void printCurInputScreen()
 {   
-   switch(currentScreen)
-     {
-        case mashInputScreen:
+        if(currentScreen.id == mashInputScreen)
         {
            lcd.setCursor(0,0);
            lcd.print("#");
@@ -215,39 +207,27 @@ void printCurInputScreen()
            lcd.print("Motor:");
            if(tempMashMotorOn)lcd.print("ON ");
            else lcd.print("OFF");
-           
-           break;
-        } 
-     }
+           lcd.setCursor(0,3);
+           lcd.print("More?:");
+           if(tempMoreMashSteps)lcd.print("YES");
+           else lcd.print("NO ");
+           lcd.print(" DONE?");
+         } 
 }
 
 int currentRow()
 {
-   switch(currentScreen)
-   {  
-     case mashInputScreen: return mashScreen.locationRows[curEdit]; 
-     case spargeQuestionScreen: return spargeQuestScreen.locationRows[curEdit];
-   } 
+    return currentScreen.locationRows[curEdit]; 
 }
 
 int currentCollumn()
 {
-  switch(currentScreen)
-  {
-   case mashInputScreen: return mashScreen.locationCollums[curEdit];
-   case spargeQuestionScreen: return spargeQuestScreen.locationCollums[curEdit];
-  } 
+    return currentScreen.locationCollums[curEdit];
 }
 
 int curLength()
 {
-  switch(currentScreen)
- {
-   case mashInputScreen: 
-   {
-      return mashScreen.varWidths[curEdit];
-   }
- } 
+      return currentScreen.varWidths[curEdit];
 }
 
 void moveSelectionRight()
@@ -262,43 +242,47 @@ void moveSelectionLeft()
 
 void increaseSelection()
 {  
-  switch(currentScreen)
-  {
-    case mashInputScreen:
-    {
        if(currentVarType() == floatVar)
        {
-         *mashScreen.floatVars[curEdit] = *mashScreen.floatVars[curEdit]+0.5;
+         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]+0.5;
        }
        if(currentVarType() == integerVar)
        {
-         *mashScreen.intVars[curEdit] = *mashScreen.intVars[curEdit]+1;
+         *currentScreen.intVars[curEdit] = *currentScreen.intVars[curEdit]+1;
        }
        if(currentVarType() == on_offVar)
        {
-          *mashScreen
+          *currentScreen.onOffVars[curEdit] = !*currentScreen.onOffVars[curEdit];
        }
-    }
-    //more cases
-  }
+       if(currentVarType() == yes_noVar)
+       {
+         *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
+       }
+       if(currentVarType() == doneVar)
+       {
+        //need to go to next Screen
+        Serial.print("NEXT SCREEN!"); 
+       }
 }
 
 void decreaseSelection()
 {
-    switch(currentScreen)
-  {
-    case mashInputScreen:
-    {
-       if(currentVarType() == floatVar && *mashScreen.floatVars[curEdit]>0.5)
+       if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0.5)
        {
-         *mashScreen.floatVars[curEdit] = *mashScreen.floatVars[curEdit]-0.5;
+         *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]-0.5;
        }
-       if(currentVarType() == integerVar && *mashScreen.intVars[curEdit]>0)
+       if(currentVarType() == integerVar && *currentScreen.intVars[curEdit]>0)
        {
-         *mashScreen.intVars[curEdit] = *mashScreen.intVars[curEdit]-1;
+         *currentScreen.intVars[curEdit] = *currentScreen.intVars[curEdit]-1;
        }
-    } 
-  }
+       if(currentVarType() == on_offVar)
+       {
+          *currentScreen.onOffVars[curEdit] = !*currentScreen.onOffVars[curEdit];
+       }
+       if(currentVarType() == yes_noVar)
+       {
+         *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
+       }
 }
 
 
