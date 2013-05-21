@@ -118,18 +118,17 @@ int Buttonloop() {
 
 int ButtonloopRepeate()
 {
-  numOfReturn = 32,766;
+  numOfReturn = 32766;
  int curButtValue = Buttonloop();
- if (curButtValue == 1 || curButtValue == 2)
- {
-   Serial.print("BUTTON PRESSED!!!");
-   
+ if (curButtValue != -1)
+ {   
    holdCounter++;
    if(holdCounter == 1)
    {
+    Serial.print("Value Output!");
     return curButtValue; 
    }
-   if(holdCounter>200)
+   if(holdCounter>50 && (curButtValue == 1 || curButtValue == 2))
    {
     return curButtValue; 
    }
@@ -140,5 +139,7 @@ int ButtonloopRepeate()
  
  return -1;
 }
+
+
 
 

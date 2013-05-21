@@ -6,8 +6,8 @@
 
 #define integerVar 1
 #define floatVar 2
-#define on/offVAr 3
-#define yes/noVar 4
+#define on_offVar 3
+#define yes_noVar 4
 #define swapBool 5
 #define doneVar 6
 
@@ -34,6 +34,7 @@ static recipie inputRecipie;
 static unsigned int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
 static float tempMashTemp;
+static boolean tempMashMotorOn;
 
 //screen struct
 struct screen
@@ -45,7 +46,7 @@ struct screen
   int varTypes[maxScreenValues];
   float * floatVars[maxScreenValues];
   unsigned int * intVars[maxScreenValues];
-  //float incAmmounts[];
+  boolean * onOffVars[maxScreenValues];
   int varWidths[maxScreenValues];
 };
 
@@ -59,6 +60,7 @@ int mashVarTypes[NUM_OF_MASH_INPUTS] = {2,1,1,1,3,4,6};
 int mashVarWidths[NUM_OF_MASH_INPUTS] = {6,2,2,2,3,3,3};
 float * mashVarFloatVars[NUM_OF_MASH_INPUTS] = {&tempMashTemp,0,0,0,0,0,0};
 unsigned int * mashVarIntVars[NUM_OF_MASH_INPUTS] = {0, &tempMashHours,&tempMashMins,&tempMashSecs,0,0,0};
+boolean * mashOnOffVars[NUM_OF_MASH_INPUTS] = {0,0,0,0,&tempMashMotorOn,0,0};
 
 
 //sparge Q screen locations
@@ -76,6 +78,7 @@ void populateScreenVars()
      mashScreen.varWidths[i] = mashVarWidths[i];
      mashScreen.floatVars[i] = mashVarFloatVars[i];
      mashScreen.intVars[i] = mashVarIntVars[i];
+     mashScreen.onOffVars[i] = mashOnOffVars[i];
   }
   
   
@@ -91,8 +94,13 @@ static boolean flashFlag = false;
 
 void inputRecipieLoop()
 {
-  int ButtonValue = Buttonloop();
-  if(ButtonValue != -1)lastFlashInt=0;
+  int ButtonValue = ButtonloopRepeate();
+  if(ButtonValue != -1)
+  {
+    //code to refresh screen quickly
+    thisFlashInt--;
+    flashFlag=false;
+  }
   switch(ButtonValue)
   { 
       case 2:
@@ -138,14 +146,14 @@ void inputRecipieLoop()
   }
   
   
-  thisFlashInt = millis()/FLASH_MILLIS;
   if(thisFlashInt>lastFlashInt)
   {
-      printCurInputScreen();
-
+    printCurInputScreen();
     flashFlag = !flashFlag;
     lastFlashInt = thisFlashInt;
   }
+  thisFlashInt = millis()/FLASH_MILLIS;
+
 }
 
 void printCurEditValue()
@@ -203,6 +211,10 @@ void printCurInputScreen()
            lcd.print(":");
            if(tempMashSecs<10)lcd.print("0");
            lcd.print(tempMashSecs);
+           lcd.setCursor(0,2);
+           lcd.print("Motor:");
+           if(tempMashMotorOn)lcd.print("ON ");
+           else lcd.print("OFF");
            
            break;
         } 
@@ -250,28 +262,43 @@ void moveSelectionLeft()
 
 void increaseSelection()
 {  
-   if(currentVarType() == floatVar)
-   {
-     *mashScreen.floatVars[curEdit] = *mashScreen.floatVars[curEdit]+0.5;
-   }
-   if(currentVarType() == integerVar)
-   {
-     *mashScreen.intVars[curEdit] = *mashScreen.intVars[curEdit]+1;
-   }
+  switch(currentScreen)
+  {
+    case mashInputScreen:
+    {
+       if(currentVarType() == floatVar)
+       {
+         *mashScreen.floatVars[curEdit] = *mashScreen.floatVars[curEdit]+0.5;
+       }
+       if(currentVarType() == integerVar)
+       {
+         *mashScreen.intVars[curEdit] = *mashScreen.intVars[curEdit]+1;
+       }
+       if(currentVarType() == on_offVar)
+       {
+          *mashScreen
+       }
+    }
+    //more cases
+  }
 }
 
 void decreaseSelection()
 {
-  switch(curEdit)
+    switch(currentScreen)
   {
-    case 0:
+    case mashInputScreen:
     {
-     break;
-    }
-    
-    case 1:
-    { 
-     break;
-    }
+       if(currentVarType() == floatVar && *mashScreen.floatVars[curEdit]>0.5)
+       {
+         *mashScreen.floatVars[curEdit] = *mashScreen.floatVars[curEdit]-0.5;
+       }
+       if(currentVarType() == integerVar && *mashScreen.intVars[curEdit]>0)
+       {
+         *mashScreen.intVars[curEdit] = *mashScreen.intVars[curEdit]-1;
+       }
+    } 
   }
 }
+
+
