@@ -1,4 +1,4 @@
-#define maxScreenValues 10
+#define maxScreenValues 14
 
 #define mashInputScreen 7
 #define spargeQuestionScreen 8
@@ -34,7 +34,8 @@ static recipie inputRecipie;
 //recipie temp vars
 static int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
-static float tempMashTemp,tempMashAmmount,tempWortTemp;
+static float tempMashTemp,tempMashAmmount;
+static float tempWortTemp = 200;
 static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
 
@@ -86,13 +87,13 @@ int spargeVarTypes[NUM_OF_SPARGE_INPUTS] = {yes_noVar,doneVar};
 boolean * spargeYesNoVars[NUM_OF_SPARGE_INPUTS] = {&tempHasSparge, 0};
 int spargeVarWidths[NUM_OF_SPARGE_INPUTS] = {3,5};
 
-//wort Q screenvars
-int wortRowsLocations[NUM_OF_WORT_INPUTS] = {5,11,14,16,5,8,11,5,8,11,5,8,11,14};
+//wort screenvars
+int wortRowsLocations[NUM_OF_WORT_INPUTS] = {5,12,15,18,5,8,11,5,8,11,5,8,11,14};
 int wortCollumnLocations[NUM_OF_WORT_INPUTS] = {0,0,0,0,1,1,1,2,2,2,3,3,3,3};
 int wortVarTypes[NUM_OF_WORT_INPUTS] = {floatVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,integerVar,doneVar};
-int wortVarWidths[NUM_OF_WORT_INPUTS] = {5,2,2,2,2,2,2,2,2,2,2,2,2,5};
-float * wortVarFloatVars[NUM_OF_WORT_INPUTS] = {&tempWortTemp,0,0,0,0,0,0,0,0,0,0,0,0};
-int * wortVarIntVars[NUM_OF_WORT_INPUTS] = {0,&tempMashHours,&tempMashMins,&tempMashSecs,&hopIntHours[0],&hopIntMins[0],&hopIntSecs[0],&hopIntHours[1],&hopIntMins[1],&hopIntSecs[1],&hopIntHours[2],&hopIntMins[2],&hopIntSecs[2]};
+int wortVarWidths[NUM_OF_WORT_INPUTS] = {6,2,2,2,2,2,2,2,2,2,2,2,2,5};
+float * wortVarFloatVars[NUM_OF_WORT_INPUTS] = {&tempWortTemp,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int * wortVarIntVars[NUM_OF_WORT_INPUTS] = {0,&tempMashHours,&tempMashMins,&tempMashSecs,&hopIntHours[0],&hopIntMins[0],&hopIntSecs[0],&hopIntHours[1],&hopIntMins[1],&hopIntSecs[1],&hopIntHours[2],&hopIntMins[2],&hopIntSecs[2],0};
 
 void populateScreenVars()
 {   
@@ -140,7 +141,7 @@ void populateScreenVars()
   for(i=0; i<NUM_OF_WORT_INPUTS; i++)
   {
      wortScreen.locationRows[i] = wortRowsLocations[i];
-     wortScreen.locationCollums[i] =wortCollumnLocations[i];
+     wortScreen.locationCollums[i] = wortCollumnLocations[i];
      wortScreen.varTypes[i] = wortVarTypes[i];
      wortScreen.varWidths[i] = wortVarWidths[i];
      wortScreen.floatVars[i] = wortVarFloatVars[i];
@@ -314,6 +315,10 @@ void printCurInputScreen()
          }
          case wortInputScreen:
          {
+          Serial.print("MADE IT TO WORT SCREEN:");
+          Serial.print(wortScreen.locationCollums[0]);
+          Serial.println();
+           
           lcd.setCursor(0,0);
           lcd.print("TEMP:");
           lcd.print(tempWortTemp);
@@ -502,6 +507,7 @@ void screenDone()
       currentScreen = wortScreen;
       lcd.clear();
       curEdit = 0;
+      break;
     }
   } 
 }
