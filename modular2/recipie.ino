@@ -20,7 +20,6 @@ struct recipie{
  boolean mashMotorStates[maxMashes];
  float mashAmmounts[maxMashes];
  unsigned int mashTimes[maxMashes];
- unsigned int spargeTime;
  unsigned int wortTotalSecs;
  unsigned int hopAdditionIntervals[3];
  float wortTemp;
@@ -37,21 +36,24 @@ void setCurrentRecipie(struct recipie inputRecipie)
 
 void setupTestRecipie()
 {
-curRecipie.numberOfMashSteps = 4;
+curRecipie.numberOfMashSteps = 3;
 curRecipie.numberOfHopAdditions = 3;
-curRecipie.mashTemps[0] = 60;
-curRecipie.mashTemps[1] = 80;
+curRecipie.mashTemps[0] = -2000;
+curRecipie.mashTemps[1] = 130;
 curRecipie.mashTemps[2] = 90;
 curRecipie.mashTemps[3] = 69;
 curRecipie.mashMotorStates[0] = false;
 curRecipie.mashMotorStates[1] = false;
 curRecipie.mashMotorStates[2] = true;
 curRecipie.mashMotorStates[3] = false;
+curRecipie.mashTimes[0] = 10;
+curRecipie.mashTimes[1] = 10;
+curRecipie.mashTimes[2] = 10;
+curRecipie.mashTimes[3] = 10;
 curRecipie.mashAmmounts[0] = 5;
-curRecipie.mashAmmounts[1] = 5;
-curRecipie.mashAmmounts[2] = 5;
-curRecipie.mashAmmounts[3] = 7;
-curRecipie.spargeTime = 8;
+curRecipie.mashAmmounts[1] = 6;
+curRecipie.mashAmmounts[2] = 0;
+curRecipie.mashAmmounts[3] = 0;
 curRecipie.wortTotalSecs = 3600;
 curRecipie.hopAdditionIntervals[0] = 10;
 curRecipie.hopAdditionIntervals[1] = 20;
@@ -72,6 +74,11 @@ int getCurrentMashStep()
   return currentMashStep; 
 }
 
+unsigned int getCurrentMashTime()
+{
+ return curRecipie.mashTimes[currentMashStep]; 
+}
+
 float getCurrentMashTemp()
 {
   return curRecipie.mashTemps[currentMashStep];
@@ -81,6 +88,7 @@ boolean moveToNextMashStep()
 {
  if(currentMashStep == curRecipie.numberOfMashSteps-1)
   {
+   currentMashStep++;
    return false;
   }else
   {
@@ -119,11 +127,6 @@ boolean mashValveTimeDone()
   }
 }
 
-unsigned int getSpargeTime()
-{
- return curRecipie.spargeTime; 
-}
-
 //general valve timer
 boolean valveTimeDone(int totalSecs)
 {
@@ -157,6 +160,11 @@ float getCurrentMashTemp(int i)
 float wortGoalTemp()
 {
   return curRecipie.wortTemp; 
+}
+
+unsigned int wortTotalTime()
+{
+ return curRecipie.wortTotalSecs; 
 }
 
 int currentHopsStep()

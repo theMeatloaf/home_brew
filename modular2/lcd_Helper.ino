@@ -122,7 +122,8 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   
   lcd.setCursor(2,2);
   lcd.print("step ");
-  lcd.print(getCurrentMashStep());
+  if(currentBrewStage()==mash) lcd.print(getCurrentMashStep());
+  else lcd.print("N/A");
   lcd.print(" out of ");
   lcd.print(getNumberOfMashSteps()-1);
   

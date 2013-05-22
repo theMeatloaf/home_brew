@@ -128,6 +128,12 @@ int convertToDisSecs(unsigned int inputSecs)
     return (inputSecs - (convertToDisHours(inputSecs)*60*60) - (convertToDisMins(inputSecs)*60));
 }
 
+//other way conversion
+unsigned int convertToSeconds(int hours, int mins, int secs)
+{
+  return (hours*60*60)+(mins*60)+(secs); 
+}
+
 //Get toal elapsed
 unsigned int getElapsed()
 {
@@ -138,6 +144,7 @@ unsigned int getAllElapsed()
 {
  return  totalElapSecs;
 }
+
 
 //serial debug Display
 void displayTimeAndTemp()
