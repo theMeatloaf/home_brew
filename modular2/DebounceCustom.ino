@@ -118,7 +118,6 @@ int Buttonloop() {
 
 int ButtonloopRepeate()
 {
-  numOfReturn = 32766;
  int curButtValue = Buttonloop();
  if (curButtValue != -1)
  {   
@@ -140,6 +139,14 @@ int ButtonloopRepeate()
  return -1;
 }
 
+void turnOnMultiHold()
+{
+ numOfReturn = 32766;  
+}
 
+void turnOffMultiHold()
+{
+ numOfReturn = 1;  
+}
 
 

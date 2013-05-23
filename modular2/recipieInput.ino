@@ -1,3 +1,5 @@
+//TODO: GET RID OF TEMP AND AMNT DURING MASH INPUT....FIGURE OUT LAST VS SPARGE AND YES/NO
+
 #define maxScreenValues 14
 
 #define mashInputScreen 7
@@ -6,6 +8,7 @@
 #define strikeInputScreen 10
 #define spargeDataInputScreen 11
 #define wortInputScreen 12
+#define saveStartQuestionScreen 13
 
 #define integerVar 1
 #define floatVar 2
@@ -18,6 +21,7 @@
 #define NUM_OF_SPARGE_INPUTS 2
 #define NUM_OF_STRIKE_INPUTS 3
 #define NUM_OF_WORT_INPUTS 14
+#define NUM_OF_SAVE_START_INPUTS 2
 
 #define FLASH_MILLIS 400
 
@@ -36,7 +40,7 @@ static int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
 static float tempMashTemp,tempMashAmmount;
 static float tempWortTemp = 200;
-static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge;
+static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
 
 //screen struct
@@ -60,7 +64,7 @@ static int curEdit=0;
 static int curDisplayedMashStep = 0;
 
 //screen defs
-screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen;
+screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen;
 
 //mash screen hardcoded vars
 int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,15,6,10};
@@ -94,6 +98,13 @@ int wortVarTypes[NUM_OF_WORT_INPUTS] = {floatVar,integerVar,integerVar,integerVa
 int wortVarWidths[NUM_OF_WORT_INPUTS] = {6,2,2,2,2,2,2,2,2,2,2,2,2,5};
 float * wortVarFloatVars[NUM_OF_WORT_INPUTS] = {&tempWortTemp,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int * wortVarIntVars[NUM_OF_WORT_INPUTS] = {0,&tempMashHours,&tempMashMins,&tempMashSecs,&hopIntHours[0],&hopIntMins[0],&hopIntSecs[0],&hopIntHours[1],&hopIntMins[1],&hopIntSecs[1],&hopIntHours[2],&hopIntMins[2],&hopIntSecs[2],0};
+
+//save/start screen vars
+int saveStartRowLocations[NUM_OF_SAVE_START_INPUTS] = {12,8};
+int saveStartCollumnLocaitons[NUM_OF_SAVE_START_INPUTS] = {1,2};
+int saveStartVarTypes[NUM_OF_SAVE_START_INPUTS] = {yes_noVar,doneVar};
+int saveStartVarWidths[NUM_OF_SAVE_START_INPUTS] = {3,6};
+boolean * saveStartYesNoVars[NUM_OF_SAVE_START_INPUTS] = {&tempSave,0};
 
 void populateScreenVars()
 {   
@@ -146,6 +157,16 @@ void populateScreenVars()
      wortScreen.varWidths[i] = wortVarWidths[i];
      wortScreen.floatVars[i] = wortVarFloatVars[i];
      wortScreen.intVars[i] = wortVarIntVars[i];
+  }
+  
+  saveQuestionScreen.id = saveStartQuestionScreen;
+  for(i=0; i<NUM_OF_SAVE_START_INPUTS; i++)
+  {
+    saveQuestionScreen.locationRows[i] = saveStartRowLocations[i];
+    saveQuestionScreen.locationCollums[i] = saveStartCollumnLocaitons[i];
+    saveQuestionScreen.varTypes[i] = saveStartVarTypes[i];
+    saveQuestionScreen.varWidths[i] = saveStartVarWidths[i];
+    saveQuestionScreen.yesNoVars[i] =saveStartYesNoVars[i];
   }
 
   //initialize currentScreen
@@ -314,11 +335,7 @@ void printCurInputScreen()
            break; 
          }
          case wortInputScreen:
-         {
-          Serial.print("MADE IT TO WORT SCREEN:");
-          Serial.print(wortScreen.locationCollums[0]);
-          Serial.println();
-           
+         { 
           lcd.setCursor(0,0);
           lcd.print("TEMP:");
           lcd.print(tempWortTemp);
@@ -331,7 +348,60 @@ void printCurInputScreen()
           lcd.print(":");
           if(tempMashSecs<10)lcd.print("0");
           lcd.print(tempMashSecs);
-          break; 
+          
+          lcd.setCursor(0,1);
+          lcd.print("HT1: ");
+          if(hopIntHours[0]<10)lcd.print("0");
+          lcd.print(hopIntHours[0]);
+          lcd.print(":");
+          if(hopIntMins[0]<10)lcd.print("0");
+          lcd.print(hopIntMins[0]);
+          lcd.print(":");
+          if(hopIntSecs[0]<10)lcd.print("0");
+          lcd.print(hopIntSecs[0]);
+          
+          lcd.setCursor(0,2);
+          lcd.print("HT2: ");
+          if(hopIntHours[1]<10)lcd.print("0");
+          lcd.print(hopIntHours[1]);
+          lcd.print(":");
+          if(hopIntMins[1]<10)lcd.print("0");
+          lcd.print(hopIntMins[1]);
+          lcd.print(":");
+          if(hopIntSecs[1]<10)lcd.print("0");
+          lcd.print(hopIntSecs[1]);
+          
+          lcd.setCursor(0,3);
+          lcd.print("HT3: ");
+          if(hopIntHours[2]<10)lcd.print("0");
+          lcd.print(hopIntHours[2]);
+          lcd.print(":");
+          if(hopIntMins[2]<10)lcd.print("0");
+          lcd.print(hopIntMins[2]);
+          lcd.print(":");
+          if(hopIntSecs[2]<10)lcd.print("0");
+          lcd.print(hopIntSecs[2]);
+          
+          lcd.print(" DONE?");
+          break;
+         }
+         
+         case saveStartQuestionScreen:
+         {
+          lcd.setCursor(3,0);
+          lcd.print("RECIPIE ENTERED");
+         
+          lcd.setCursor(6,1);
+          lcd.print("Save? ");
+          
+          if(tempSave)lcd.print("YES");
+          else lcd.print("NO ");
+          
+          lcd.setCursor(8,2);
+          if(tempSave)lcd.print("NEXT  ");
+          else lcd.print("START!");
+          
+          break;
          }
     }  
 }
@@ -418,18 +488,19 @@ void screenDone()
   {
    case strikeInputScreen:
    {
-     inputRecipie.mashTemps[0] = tempMashTemp;
-     inputRecipie.mashAmmounts[0] = tempMashAmmount;
-     inputRecipie.mashMotorStates[0] = false;
-     inputRecipie.mashTimes[0] = 4294967294;//max Time
-     if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
-     curDisplayedMashStep++;
-     curEdit= 0;
-     lcd.clear();
-     tempMashTemp = 0;
-     tempMashAmmount = 0;
-     currentScreen = mashScreen;
-     break;
+       //go to Mash screen
+       inputRecipie.mashTemps[0] = tempMashTemp;
+       inputRecipie.mashAmmounts[0] = tempMashAmmount;
+       inputRecipie.mashMotorStates[0] = false;
+       inputRecipie.mashTimes[0] = 4294967294;//max Time
+       if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
+       curDisplayedMashStep++;
+       curEdit= 0;
+       lcd.clear();
+       tempMashTemp = 0;
+       tempMashAmmount = 0;
+       currentScreen = mashScreen;
+       break;
    }
    case mashInputScreen:
    {
@@ -479,16 +550,19 @@ void screenDone()
        break;
     }
     case spargeQuestionScreen:
-    {
+    {       
        if(tempHasSparge)
        {
-        //go to Sparge info Screen
-       lcd.clear();
-       curEdit = 0;
-       currentScreen = spargeDataScreen; 
+        //go to Sparge data Screen
+        lcd.clear();
+        curEdit = 0;
+        currentScreen = spargeDataScreen; 
        }else
-       {
+       {         
         //go to Wort Screen
+        tempMashHours = 0;
+        tempMashMins = 0;
+        tempMashSecs = 0;
         currentScreen = wortScreen;
         lcd.clear();
         curEdit = 0;
@@ -498,15 +572,58 @@ void screenDone()
     
     case spargeDataInputScreen:
     {
-      inputRecipie.numberOfMashSteps++;
+      curDisplayedMashStep++;
+      inputRecipie.numberOfMashSteps = curDisplayedMashStep;
       inputRecipie.mashTemps[curDisplayedMashStep] = tempMashTemp;
       inputRecipie.mashAmmounts[curDisplayedMashStep] = tempMashAmmount;
       inputRecipie.mashMotorStates[curDisplayedMashStep] = false;
       inputRecipie.mashTimes[curDisplayedMashStep] = 0;
       //go to Wort Screen
+      tempMashHours = 0;
+      tempMashMins = 0;
+      tempMashSecs = 0;
       currentScreen = wortScreen;
       lcd.clear();
       curEdit = 0;
+      break;
+    }
+    
+    case wortInputScreen:
+    {
+     //save wort
+     inputRecipie.wortTemp = tempWortTemp;
+     inputRecipie.wortTotalSecs = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
+     for(int i=0; i<3; i++)
+     {
+        if(convertToSeconds(hopIntHours[i],hopIntMins[i],hopIntSecs[i])>0)
+        {
+         inputRecipie.hopAdditionIntervals[i] = convertToSeconds(hopIntHours[i],hopIntMins[i],hopIntSecs[i]);
+         if(inputRecipie.numOfHopSteps==0)inputRecipie.numOfHopSteps=1;
+         else inputRecipie.numOfHopSteps++;
+        } 
+     }
+     curEdit = 0;
+     currentScreen = saveQuestionScreen;
+     lcd.clear();
+     //
+     break; 
+    }
+    
+    case saveStartQuestionScreen:
+    {
+      if(tempSave)
+      {
+       //Go Save
+       lcd.clear();
+       lcd.setCursor(0,0);
+       lcd.print("I'M THE SAVE SCREEN LUR"); 
+      }else
+      {
+       //start brew!
+       displayRecipieDebug();
+       setCurrentRecipie(inputRecipie);
+       readyToBrew = true;
+      }
       break;
     }
   } 
@@ -545,7 +662,7 @@ void screenBack()
    
    case spargeQuestionScreen:
    {
-       //go back to Mash 
+       //go back to Mash
         currentScreen = mashScreen;
         tempMashTemp =  inputRecipie.mashTemps[curDisplayedMashStep];
         tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
@@ -558,6 +675,101 @@ void screenBack()
         break;
    }
    
+   case spargeDataInputScreen:
+   {
+     //go Back to Sparge Question Screen
+     currentScreen = spargeQuestScreen;
+     lcd.clear();
+     curEdit = 0;
+    break; 
+   }
+   
+   case wortInputScreen:
+   {
+    if(tempHasSparge)
+    {
+      //go Back To Sparge info Screen
+      curDisplayedMashStep--;
+      tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
+      tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
+      currentScreen = spargeDataScreen;
+      lcd.clear();
+      curEdit = 0;
+    }else
+    {
+     //go Back to Sparge Question Screen
+     currentScreen = spargeQuestScreen;
+     lcd.clear();
+     curEdit = 0;
+    }
+    break; 
+   }
+   
+   case saveStartQuestionScreen:
+   {
+    curEdit = 0;
+    currentScreen = wortScreen;
+    lcd.clear();
+    //go back to Wort screen
+    break; 
+   }
+   
   } 
+}
+
+
+void displayRecipieDebug()
+{
+   Serial.print("numberOfMashSteps:");
+   Serial.print(inputRecipie.numberOfMashSteps);
+   Serial.println();
+   
+   Serial.print("numberOfHopAdditions");
+   Serial.print(inputRecipie.numOfHopSteps);
+   Serial.println();
+   
+   Serial.print("MashTemps:");
+   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(inputRecipie.mashTemps[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("MashMotorStates:");
+   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(inputRecipie.mashMotorStates[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("mashAmmounts:");
+   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(inputRecipie.mashAmmounts[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("mashTimes:");
+   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(inputRecipie.mashTimes[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("WortSeconds");
+   Serial.print(inputRecipie.wortTotalSecs);
+   Serial.println();
+   
+   Serial.print("WortTemp");
+   Serial.print(inputRecipie.wortTemp);
+   Serial.println();
+   
+ //unsigned int hopAdditionIntervals[3];
+ //int numOfHopSteps;
+  
 }
 

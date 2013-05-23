@@ -35,13 +35,15 @@ void setup()
   setupTempController(); 
 
   //recipie for Testing
-  setupTestRecipie();
+  //setupTestRecipie();
 
+  turnOnMultiHold();
   while(!readyToBrew)
   {
     //say in here unless its really ready to brew!
     inputRecipieLoop();
   }
+  turnOffMultiHold();
 
   //start Brew
   changeScreens();

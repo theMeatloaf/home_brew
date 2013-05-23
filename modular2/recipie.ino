@@ -15,7 +15,6 @@ struct recipie{
  //first mash step is strike conditions....so temp and ammount to be poured in...set motor OFF always!
  //last mash step temp is sparge conditions...so temp for sparge...ammount held in diff Variable
  int numberOfMashSteps;
- int numberOfHopAdditions;
  float mashTemps[maxMashes];
  boolean mashMotorStates[maxMashes];
  float mashAmmounts[maxMashes];
@@ -37,7 +36,6 @@ void setCurrentRecipie(struct recipie inputRecipie)
 void setupTestRecipie()
 {
 curRecipie.numberOfMashSteps = 3;
-curRecipie.numberOfHopAdditions = 3;
 curRecipie.mashTemps[0] = -2000;
 curRecipie.mashTemps[1] = 130;
 curRecipie.mashTemps[2] = 90;
