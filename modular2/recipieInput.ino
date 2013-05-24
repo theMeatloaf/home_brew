@@ -461,7 +461,7 @@ void moveSelectionRight()
 }
 
 void moveSelectionLeft()
-{
+{  
   if(curEdit==0)
   {
     screenBack();
@@ -473,7 +473,11 @@ void moveSelectionLeft()
   if(curEdit==5 && !tempMoreMashSteps)
   {
      curEdit--; 
-  } 
+  }
+  if(curEdit==0 && !tempMoreMashSteps)
+  {
+    screenBack(); 
+  }
 }
 
 void increaseSelection()
@@ -655,7 +659,6 @@ void screenDone()
       }else
       {
        //start brew!
-       displayRecipieDebug();
        setCurrentRecipie(inputRecipie);
        readyToBrew = true;
       }
@@ -751,60 +754,3 @@ void screenBack()
    
   } 
 }
-
-
-void displayRecipieDebug()
-{
-   Serial.print("numberOfMashSteps:");
-   Serial.print(inputRecipie.numberOfMashSteps);
-   Serial.println();
-   
-   Serial.print("numberOfHopAdditions");
-   Serial.print(inputRecipie.numOfHopSteps);
-   Serial.println();
-   
-   Serial.print("MashTemps:");
-   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
-   {
-     Serial.print(inputRecipie.mashTemps[i]);
-     Serial.print(" ");
-   }
-   Serial.println();
-   
-   Serial.print("MashMotorStates:");
-   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
-   {
-     Serial.print(inputRecipie.mashMotorStates[i]);
-     Serial.print(" ");
-   }
-   Serial.println();
-   
-   Serial.print("mashAmmounts:");
-   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
-   {
-     Serial.print(inputRecipie.mashAmmounts[i]);
-     Serial.print(" ");
-   }
-   Serial.println();
-   
-   Serial.print("mashTimes:");
-   for(int i=0; i<=inputRecipie.numberOfMashSteps; i++)
-   {
-     Serial.print(inputRecipie.mashTimes[i]);
-     Serial.print(" ");
-   }
-   Serial.println();
-   
-   Serial.print("WortSeconds");
-   Serial.print(inputRecipie.wortTotalSecs);
-   Serial.println();
-   
-   Serial.print("WortTemp");
-   Serial.print(inputRecipie.wortTemp);
-   Serial.println();
-   
- //unsigned int hopAdditionIntervals[3];
- //int numOfHopSteps;
-  
-}
-

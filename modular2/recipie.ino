@@ -38,19 +38,19 @@ void setupTestRecipie()
 curRecipie.numberOfMashSteps = 3;
 curRecipie.mashTemps[0] = -2000;
 curRecipie.mashTemps[1] = 130;
-curRecipie.mashTemps[2] = 90;
+curRecipie.mashTemps[2] = 69;
 curRecipie.mashTemps[3] = 69;
 curRecipie.mashMotorStates[0] = false;
 curRecipie.mashMotorStates[1] = false;
 curRecipie.mashMotorStates[2] = true;
 curRecipie.mashMotorStates[3] = false;
-curRecipie.mashTimes[0] = 10;
+curRecipie.mashTimes[0] = 4294967294;
 curRecipie.mashTimes[1] = 10;
 curRecipie.mashTimes[2] = 10;
-curRecipie.mashTimes[3] = 10;
+curRecipie.mashTimes[3] = 00;
 curRecipie.mashAmmounts[0] = 5;
 curRecipie.mashAmmounts[1] = 6;
-curRecipie.mashAmmounts[2] = 7;
+curRecipie.mashAmmounts[2] = 0;
 curRecipie.mashAmmounts[3] = 8;
 curRecipie.wortTotalSecs = 3600;
 curRecipie.hopAdditionIntervals[0] = 10;
@@ -202,5 +202,58 @@ boolean isTimeForHops()
   return false;
 }
 
-
+void displayRecipieDebug()
+{
+   Serial.print("numberOfMashSteps:");
+   Serial.print(curRecipie.numberOfMashSteps);
+   Serial.println();
+   
+   Serial.print("numberOfHopAdditions");
+   Serial.print(curRecipie.numOfHopSteps);
+   Serial.println();
+   
+   Serial.print("MashTemps:");
+   for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(curRecipie.mashTemps[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("MashMotorStates:");
+   for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(curRecipie.mashMotorStates[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("mashAmmounts:");
+   for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(curRecipie.mashAmmounts[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("mashTimes:");
+   for(int i=0; i<=curRecipie.numberOfMashSteps; i++)
+   {
+     Serial.print(curRecipie.mashTimes[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
+   
+   Serial.print("WortSeconds");
+   Serial.print(curRecipie.wortTotalSecs);
+   Serial.println();
+   
+   Serial.print("WortTemp");
+   Serial.print(curRecipie.wortTemp);
+   Serial.println();
+   
+ //unsigned int hopAdditionIntervals[3];
+ //int numOfHopSteps;
+  
+}
 
