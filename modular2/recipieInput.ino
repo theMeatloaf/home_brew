@@ -581,6 +581,7 @@ void screenDone()
        }else
        {
          //go to spargeQuestion screen
+         tempMoreMashSteps = true;
          inputRecipie.numberOfMashSteps = curDisplayedMashStep;
          currentScreen = spargeQuestScreen;
          return;
@@ -727,9 +728,9 @@ void screenBack()
     if(tempHasSparge)
     {
       //go Back To Sparge info Screen
-      curDisplayedMashStep--;
       tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
+      curDisplayedMashStep--;
       currentScreen = spargeDataScreen;
       lcd.clear();
       curEdit = 0;
