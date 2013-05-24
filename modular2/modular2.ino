@@ -8,7 +8,7 @@ extern const int sparge = 3;
 extern const int mashout = 4;
 
 //most important flag!
-extern boolean readyToBrew = false;
+extern boolean readyToBrew = true;
 
 //inport global Vars
 extern const int outlet1,outlet2,spargeVesselTemp, mashVesselTemp,wortVesselTemp, mash, wort, strike, motorRelay;
@@ -35,7 +35,7 @@ void setup()
   setupTempController(); 
 
   //recipie for Testing
-  //setupTestRecipie();
+  setupTestRecipie();
 
   turnOnMultiHold();
   while(!readyToBrew)

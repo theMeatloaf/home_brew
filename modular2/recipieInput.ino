@@ -226,13 +226,12 @@ void inputRecipieLoop()
      }
   }else
   {
-       printCurEditValue();
+       printCurInputScreen();
   }
   
   
   if(thisFlashInt>lastFlashInt)
   {
-    printCurInputScreen();
     flashFlag = !flashFlag;
     lastFlashInt = thisFlashInt;
   }
@@ -240,7 +239,7 @@ void inputRecipieLoop()
 
 }
 
-void printCurEditValue()
+/*void printCurEditValue()
 { 
      if(currentVarType() == floatVar)
      {
@@ -253,7 +252,7 @@ void printCurEditValue()
       }
       lcd.print(*currentScreen.intVars[curEdit]); 
      } 
-}
+}*/
 
 int currentVarType()
 {
@@ -270,8 +269,21 @@ void printCurInputScreen()
            lcd.print("#");
            if(curDisplayedMashStep < 10)lcd.print("0");
            lcd.print(curDisplayedMashStep);
-           lcd.print(" Temp:");
-           lcd.print(tempMashTemp);
+           if(tempMoreMashSteps)
+           {
+               lcd.print(" Temp:");
+               lcd.print(tempMashTemp);
+           }else
+           {
+               //make it not appear
+               if(curEdit==0)
+               {
+                curEdit++; 
+               }
+               lcd.print("            ");
+               tempMashTemp = 0; 
+           }
+
            lcd.setCursor(0,1);
            lcd.print("TIME:");
            if(tempMashHours<10)lcd.print("0");
@@ -286,8 +298,17 @@ void printCurInputScreen()
            lcd.print("Motor:");
            if(tempMashMotorOn)lcd.print("ON  ");
            else lcd.print("OFF ");
-           lcd.print("Amnt:");
-           lcd.print(tempMashAmmount);
+           if(tempMoreMashSteps)
+           {
+              lcd.print("Amnt:");
+              lcd.print(tempMashAmmount);
+           }else
+           { 
+              //make it not appear
+              lcd.print("          ");
+              tempMashAmmount = 0; 
+           }
+           
            lcd.setCursor(0,3);
            lcd.print("More?:");
            if(tempMoreMashSteps)lcd.print("YES");
@@ -429,7 +450,14 @@ void moveSelectionRight()
         screenDone();
         return;
     }
+   
   curEdit++;
+  
+  //custom skip logic
+  if(curEdit==5 && !tempMoreMashSteps)
+  {
+     curEdit++; 
+  } 
 }
 
 void moveSelectionLeft()
@@ -440,6 +468,12 @@ void moveSelectionLeft()
     return;
   }
   curEdit--;
+  
+  //custom skip logic
+  if(curEdit==5 && !tempMoreMashSteps)
+  {
+     curEdit--; 
+  } 
 }
 
 void increaseSelection()
@@ -574,6 +608,7 @@ void screenDone()
     {
       curDisplayedMashStep++;
       inputRecipie.numberOfMashSteps = curDisplayedMashStep;
+      inputRecipie.mashTemps[curDisplayedMashStep-1] = tempMashTemp;//hold sparge temp during last mash time...
       inputRecipie.mashTemps[curDisplayedMashStep] = tempMashTemp;
       inputRecipie.mashAmmounts[curDisplayedMashStep] = tempMashAmmount;
       inputRecipie.mashMotorStates[curDisplayedMashStep] = false;
