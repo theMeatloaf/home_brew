@@ -35,7 +35,7 @@ void setup()
   setupTempController(); 
 
   //recipie for Testing
-  setupTestRecipie();
+  //setupTestRecipie();
 
   turnOnMultiHold();
   while(!readyToBrew)

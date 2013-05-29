@@ -454,7 +454,7 @@ void moveSelectionRight()
   curEdit++;
   
   //custom skip logic
-  if(curEdit==5 && !tempMoreMashSteps)
+  if(curEdit==5 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
   {
      curEdit++; 
   } 
@@ -470,11 +470,11 @@ void moveSelectionLeft()
   curEdit--;
   
   //custom skip logic
-  if(curEdit==5 && !tempMoreMashSteps)
+  if(curEdit==5 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
   {
      curEdit--; 
   }
-  if(curEdit==0 && !tempMoreMashSteps)
+  if(curEdit==0 && !tempMoreMashSteps && currentScreen.id==mashInputScreen)
   {
     screenBack(); 
   }
@@ -530,7 +530,7 @@ void screenDone()
        inputRecipie.mashTemps[0] = tempMashTemp;
        inputRecipie.mashAmmounts[0] = tempMashAmmount;
        inputRecipie.mashMotorStates[0] = false;
-       inputRecipie.mashTimes[0] = 4294967294;//max Time
+       inputRecipie.mashTimes[0] = 65534;//max Time
        if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
        curDisplayedMashStep++;
        curEdit= 0;
@@ -581,7 +581,7 @@ void screenDone()
        }else
        {
          //go to spargeQuestion screen
-         tempMoreMashSteps = true;
+         tempMoreMashSteps = false;
          inputRecipie.numberOfMashSteps = curDisplayedMashStep;
          currentScreen = spargeQuestScreen;
          return;
@@ -598,7 +598,16 @@ void screenDone()
         currentScreen = spargeDataScreen; 
        }else
        {         
-        //go to Wort Screen
+        //go to Wort Screen and save last mash step and create zero time sparge
+        curDisplayedMashStep++;
+        inputRecipie.numberOfMashSteps = curDisplayedMashStep;
+        inputRecipie.mashTemps[curDisplayedMashStep] = 0;//turn off heater....
+        inputRecipie.mashTemps[curDisplayedMashStep-1] = 0;
+        inputRecipie.mashMotorStates[curDisplayedMashStep-1] = tempMashMotorOn;//motor state
+        inputRecipie.mashMotorStates[curDisplayedMashStep] = false; //turn off during non sparge
+        inputRecipie.mashTimes[curDisplayedMashStep-1] = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
+        inputRecipie.mashTimes[curDisplayedMashStep] = 0;
+
         tempMashHours = 0;
         tempMashMins = 0;
         tempMashSecs = 0;
@@ -633,13 +642,13 @@ void screenDone()
      //save wort
      inputRecipie.wortTemp = tempWortTemp;
      inputRecipie.wortTotalSecs = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
+     inputRecipie.numOfHopSteps=0;
      for(int i=0; i<3; i++)
      {
         if(convertToSeconds(hopIntHours[i],hopIntMins[i],hopIntSecs[i])>0)
         {
          inputRecipie.hopAdditionIntervals[i] = convertToSeconds(hopIntHours[i],hopIntMins[i],hopIntSecs[i]);
-         if(inputRecipie.numOfHopSteps==0)inputRecipie.numOfHopSteps=1;
-         else inputRecipie.numOfHopSteps++;
+         inputRecipie.numOfHopSteps++;
         } 
      }
      curEdit = 0;
@@ -701,7 +710,11 @@ void screenBack()
    
    case spargeQuestionScreen:
    {
-       //go back to Mash
+       //go back to Mash and handle loss of sparge if necessary
+        if(inputRecipie.mashTemps[curDisplayedMashStep]==0 && inputRecipie.mashTemps[curDisplayedMashStep-1]==0)
+        {
+        curDisplayedMashStep--;
+        }
         currentScreen = mashScreen;
         tempMashTemp =  inputRecipie.mashTemps[curDisplayedMashStep];
         tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];

@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+#include "EEPROMAnything.h"
 
 //mash variables
 #define maxMashes 10
@@ -22,6 +24,7 @@ struct recipie{
  unsigned int wortTotalSecs;
  unsigned int hopAdditionIntervals[3];
  float wortTemp;
+ char * name;
  int numOfHopSteps;
 };
 
@@ -58,6 +61,14 @@ curRecipie.hopAdditionIntervals[1] = 20;
 curRecipie.hopAdditionIntervals[2] = 30;
 curRecipie.wortTemp = 100;
 curRecipie.numOfHopSteps = 3;
+
+//test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Serial.print("THIS IS THE ADDRESS");
+//Serial.print(EEPROM_writeAnything(0, curRecipie));
+//Serial.println();
+
+//EEPROM_readAnything(0,curRecipie);
+//Serial.print(curRecipie.mashTemps[3]);
 }
 
 //////////
@@ -110,7 +121,7 @@ void resetValveCounters()
 //function for Mash valve function
 boolean mashValveTimeDone()
 {  
-  if(valveOpenSecs < curRecipie.mashAmmounts[currentMashStep])
+  if(valveOpenSecs <= curRecipie.mashAmmounts[currentMashStep])
   {   
   thisValveSec = (millis()/1000);
   if(thisValveSec > lastValveSec)//if second has passed...display
@@ -128,7 +139,7 @@ boolean mashValveTimeDone()
 //general valve timer
 boolean valveTimeDone(int totalSecs)
 {
-    if(valveOpenSecs < totalSecs)
+    if(valveOpenSecs <= totalSecs)
   {   
   thisValveSec = (millis()/1000);
   if(thisValveSec > lastValveSec)//if second has passed...display
@@ -188,7 +199,7 @@ boolean isTimeForHops()
   }
   
   int i;
-  for(i=0; i<3; i++)
+  for(i=0; i<totalHopsSteps(); i++)
   {
    if(curRecipie.hopAdditionIntervals[i]==getElapsed() && !waitFlag)
    {
@@ -252,8 +263,18 @@ void displayRecipieDebug()
    Serial.print(curRecipie.wortTemp);
    Serial.println();
    
- //unsigned int hopAdditionIntervals[3];
- //int numOfHopSteps;
+   Serial.print("numberOfHopSteps");
+   Serial.print(curRecipie.numOfHopSteps);
+   Serial.println();
+   
+   
+   Serial.print("Hop Times:");
+   for(int i=0; i<=curRecipie.numOfHopSteps; i++)
+   {
+     Serial.print(curRecipie.hopAdditionIntervals[i]);
+     Serial.print(" ");
+   }
+   Serial.println();
   
 }
 
