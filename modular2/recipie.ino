@@ -24,7 +24,7 @@ struct recipie{
  unsigned int wortTotalSecs;
  unsigned int hopAdditionIntervals[3];
  float wortTemp;
- char * name;
+ char name[17];
  int numOfHopSteps;
 };
 
@@ -62,13 +62,42 @@ curRecipie.hopAdditionIntervals[2] = 30;
 curRecipie.wortTemp = 100;
 curRecipie.numOfHopSteps = 3;
 
-//test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//Serial.print("THIS IS THE ADDRESS");
-//Serial.print(EEPROM_writeAnything(0, curRecipie));
-//Serial.println();
+curRecipie.name[0] = 't';
+curRecipie.name[1] = 'e';
+curRecipie.name[2] = 's';
+curRecipie.name[3] = 't';
+curRecipie.name[4] = 'y';
+curRecipie.name[5] = '2';
+curRecipie.name[6] = '2';
+curRecipie.name[7] = '2';
+curRecipie.name[8] = '2';
+curRecipie.name[9] = '2';
+curRecipie.name[10] = '2';
+curRecipie.name[11] = '2';
+curRecipie.name[12] = '2';
+curRecipie.name[13] = '2';
+curRecipie.name[14] = '2';
+curRecipie.name[15] = '3';
+curRecipie.name[16] = '3';
 
-//EEPROM_readAnything(0,curRecipie);
-//Serial.print(curRecipie.mashTemps[3]);
+ 
+//test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Serial.print("THIS IS THE ADDRESS");
+//Serial.print((1+(0*4))*142);
+Serial.print(EEPROM_writeAnything(((1+(0*4))*142), curRecipie));
+Serial.println();
+/*for(int i=0; i<4; i++)
+  {
+    EEPROM_readAnything(i*145,curRecipie);
+    Serial.print(curRecipie.name);
+    lcd.print(curRecipie.name);
+  }*/
+  
+ /* for (int i = 0; i < 4096; i++)
+    EEPROM.write(i, 0);
+    
+  // turn the LED on when we're done
+  digitalWrite(13, HIGH);*/
 }
 
 //////////

@@ -17,7 +17,7 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   lcd.begin(20, 4);
  }
  
- void displayBootScreen()
+  void displayBootScreen()
  {
    for(int i=9; i<20; i++)
    {
@@ -45,11 +45,6 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    delay(1700);
    
    changeScreens();
-
-/*   lcd.setCursor(2,1);
-   lcd.print("Please Press Up");
-   lcd.setCursor(3,2);
-   lcd.print("to start Brew");*/
  }
  
  void displaySpargeLCD()

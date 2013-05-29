@@ -1,7 +1,9 @@
-//TODO: GET RID OF TEMP AND AMNT DURING MASH INPUT....FIGURE OUT LAST VS SPARGE AND YES/NO
-
 #define maxScreenValues 14
+#define sizeOfRecipieMem 142
+#define numberOfSavedSlots 28
 
+#define loadOrNewInputScreen 14
+#define savedListPickingScreen 15
 #define mashInputScreen 7
 #define spargeQuestionScreen 8
 #define wortInputScreen 9
@@ -14,7 +16,6 @@
 #define floatVar 2
 #define on_offVar 3
 #define yes_noVar 4
-#define swapBool 5
 #define doneVar 6
 
 #define NUM_OF_MASH_INPUTS 8
@@ -22,6 +23,9 @@
 #define NUM_OF_STRIKE_INPUTS 3
 #define NUM_OF_WORT_INPUTS 14
 #define NUM_OF_SAVE_START_INPUTS 2
+#define NUM_OF_LOAD_NEW_INPUTS 2
+#define NUM_OF_SAVED_LIST_INPUTS 4
+
 
 #define FLASH_MILLIS 400
 
@@ -40,7 +44,7 @@ static int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
 static float tempMashTemp,tempMashAmmount;
 static float tempWortTemp = 200;
-static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave;
+static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave, tempLoadOrNew;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
 
 //screen struct
@@ -61,10 +65,11 @@ struct screen
 //screen and edit counters
 static screen currentScreen;
 static int curEdit=0;
+static int curSavedDisplayPage = 0;
 static int curDisplayedMashStep = 0;
 
 //screen defs
-screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen;
+screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen;
 
 //mash screen hardcoded vars
 int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,15,6,10};
@@ -105,6 +110,20 @@ int saveStartCollumnLocaitons[NUM_OF_SAVE_START_INPUTS] = {1,2};
 int saveStartVarTypes[NUM_OF_SAVE_START_INPUTS] = {yes_noVar,doneVar};
 int saveStartVarWidths[NUM_OF_SAVE_START_INPUTS] = {3,6};
 boolean * saveStartYesNoVars[NUM_OF_SAVE_START_INPUTS] = {&tempSave,0};
+
+//load or new screen vars
+int loadOrNewRowLocations[NUM_OF_LOAD_NEW_INPUTS] = {0,0};
+int loadOrNewCollumnLocations[NUM_OF_LOAD_NEW_INPUTS] = {1,2};
+int loadOrNewVarTypes[NUM_OF_LOAD_NEW_INPUTS] = {yes_noVar,doneVar};
+int loadOrNewVarWidths[NUM_OF_LOAD_NEW_INPUTS] = {4,6};
+boolean * loadOrNewYesNoVars[NUM_OF_LOAD_NEW_INPUTS] = {&tempLoadOrNew,0};
+
+//saved List screen vars
+int savedListRowLocations[NUM_OF_SAVED_LIST_INPUTS] = {3,3,3,3};
+int savedListCollumnLocations[NUM_OF_SAVED_LIST_INPUTS] = {0,1,2,3};
+int savedListVarWidths[NUM_OF_SAVED_LIST_INPUTS] = {17,17,17,17};
+int savedListVarTypes[NUM_OF_SAVED_LIST_INPUTS] = {0,0,0,doneVar};
+
 
 void populateScreenVars()
 {   
@@ -169,8 +188,27 @@ void populateScreenVars()
     saveQuestionScreen.yesNoVars[i] =saveStartYesNoVars[i];
   }
 
+  loadOrNewScreen.id = loadOrNewInputScreen;
+  for(i=0; i<NUM_OF_LOAD_NEW_INPUTS; i++)
+  {
+    loadOrNewScreen.locationRows[i] = loadOrNewRowLocations[i];
+    loadOrNewScreen.locationCollums[i] = loadOrNewCollumnLocations[i];
+    loadOrNewScreen.varTypes[i] = loadOrNewVarTypes[i];
+    loadOrNewScreen.varWidths[i] = loadOrNewVarWidths[i];
+    loadOrNewScreen.yesNoVars[i] = loadOrNewYesNoVars[i];
+  }
+  
+  savedListScreen.id = savedListPickingScreen;
+  for(i=0; i<NUM_OF_SAVED_LIST_INPUTS; i++)
+  {
+   savedListScreen.locationRows[i] = savedListRowLocations[i];
+   savedListScreen.locationCollums[i] = savedListCollumnLocations[i];
+   savedListScreen.varWidths[i] = savedListVarWidths[i];
+   savedListScreen.varTypes[i] = savedListVarTypes[i];
+  }
+
   //initialize currentScreen
-  currentScreen = strikeScreen;
+  currentScreen = loadOrNewScreen;
 }
 
 
@@ -238,21 +276,6 @@ void inputRecipieLoop()
   thisFlashInt = millis()/FLASH_MILLIS;
 
 }
-
-/*void printCurEditValue()
-{ 
-     if(currentVarType() == floatVar)
-     {
-      lcd.print(*currentScreen.floatVars[curEdit]);
-     }else if(currentVarType() == integerVar)
-     {
-      for(i=0; i<curLength(); i++)
-      {
-       if(*currentScreen.intVars[curEdit]<(i*10))lcd.print("0"); 
-      }
-      lcd.print(*currentScreen.intVars[curEdit]); 
-     } 
-}*/
 
 int currentVarType()
 {
@@ -424,6 +447,37 @@ void printCurInputScreen()
           
           break;
          }
+         
+         case loadOrNewInputScreen:
+         {
+          lcd.setCursor(0,0);
+          lcd.print("Load Saved Or New?");
+          
+          lcd.setCursor(0,1);
+          if(tempLoadOrNew)lcd.print("Load");
+          else lcd.print("New ");
+          
+          lcd.setCursor(0,2);
+          lcd.print("DONE?");
+          break;
+         }
+         
+         case savedListPickingScreen:
+         {
+          for(i=0;i<4;i++)
+          {
+              lcd.setCursor(0,i);
+              lcd.print((i+(curSavedDisplayPage*4)+1));
+              if((i+(curSavedDisplayPage*4)+1)<10) lcd.print(" ");
+              lcd.print(" ");
+              Serial.print((i+(curSavedDisplayPage*4))*sizeOfRecipieMem);
+              Serial.print(" ");
+              EEPROM_readAnything(((i+(curSavedDisplayPage*4))*sizeOfRecipieMem),curRecipie);
+              if(curRecipie.name[0]!='\0')lcd.print(curRecipie.name);
+              else lcd.print("empty");
+          }
+          break;
+         }
     }  
 }
 
@@ -524,6 +578,35 @@ void screenDone()
 {
  switch(currentScreen.id) 
   {
+   case savedListPickingScreen:
+   {
+     if(curSavedDisplayPage == ((numberOfSavedSlots/4)-1))
+     {
+      return;//dont go no where 
+     }
+     curSavedDisplayPage++;
+     curEdit = 0;
+     lcd.clear();
+     break;
+   } 
+    
+   case loadOrNewInputScreen:
+   {
+      if(tempLoadOrNew)
+      {
+        curEdit = 0;
+        lcd.clear();
+        currentScreen = savedListScreen;    
+      }else
+      {
+       //start new recipie
+       curEdit = 0;
+       lcd.clear();
+       currentScreen = strikeScreen; 
+      }
+      break; 
+   }
+    
    case strikeInputScreen:
    {
        //go to Mash screen
@@ -681,6 +764,21 @@ void screenBack()
 {
    switch(currentScreen.id) 
   {
+   case savedListPickingScreen:
+   {
+     curEdit = 0;
+     lcd.clear();
+     if(curSavedDisplayPage == 0)
+     {
+      //go back to first question
+      currentScreen = loadOrNewScreen;
+      return;
+     }
+     curSavedDisplayPage--;
+
+     break;
+   }  
+    
    case mashInputScreen:
    {
        if(curDisplayedMashStep>1)
