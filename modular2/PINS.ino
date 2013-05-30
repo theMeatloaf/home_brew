@@ -17,7 +17,7 @@ extern const int spargeValve  = 4;
 extern const int mashValve  = 3;  
 extern const int wortValve  = 5;  
 
-
+extern const int pumpRelayPin = 12;
 
 void setupPins()
 {
@@ -31,12 +31,13 @@ void setupPins()
   pinMode(spargeValve, OUTPUT);
   pinMode(wortValve,OUTPUT);
   pinMode(mashValve,OUTPUT);
-
+  pinMode(pumpRelayPin,OUTPUT);
 }
 
 void turnHeatersOff()
 {
-    digitalWrite(spargeValve,HIGH);
+    digitalWrite(outlet1,LOW);
+    digitalWrite(outlet2,LOW);
 }
 
 void openSpargeValve()
@@ -75,4 +76,13 @@ void closeWortValve()
  digitalWrite(wortValve,LOW); 
 }
 
+void turnOnPump()
+{
+ digitalWrite(pumpRelayPin,HIGH); 
+}
+
+void turnOffPump()
+{
+ digitalWrite(pumpRelayPin,LOW); 
+}
 

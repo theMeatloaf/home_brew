@@ -11,12 +11,14 @@
 #define spargeDataInputScreen 11
 #define wortInputScreen 12
 #define saveStartQuestionScreen 13
+#define saveNameInputScreen 16
 
 #define integerVar 1
 #define floatVar 2
 #define on_offVar 3
 #define yes_noVar 4
 #define doneVar 6
+#define leterVar 7
 
 #define NUM_OF_MASH_INPUTS 8
 #define NUM_OF_SPARGE_INPUTS 2
@@ -25,6 +27,7 @@
 #define NUM_OF_SAVE_START_INPUTS 2
 #define NUM_OF_LOAD_NEW_INPUTS 2
 #define NUM_OF_SAVED_LIST_INPUTS 4
+#define NUM_OF_SAVED_NAME_INPUTS 18
 
 
 #define FLASH_MILLIS 400
@@ -69,7 +72,7 @@ static int curSavedDisplayPage = 0;
 static int curDisplayedMashStep = 0;
 
 //screen defs
-screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen;
+screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen, saveNameScreen;
 
 //mash screen hardcoded vars
 int mashRowLocations[NUM_OF_MASH_INPUTS] = {9,5,8,11,6,15,6,10};
@@ -124,6 +127,7 @@ int savedListCollumnLocations[NUM_OF_SAVED_LIST_INPUTS] = {0,1,2,3};
 int savedListVarWidths[NUM_OF_SAVED_LIST_INPUTS] = {17,17,17,17};
 int savedListVarTypes[NUM_OF_SAVED_LIST_INPUTS] = {0,0,0,doneVar};
 
+//
 
 void populateScreenVars()
 {   
@@ -304,7 +308,6 @@ void printCurInputScreen()
                 curEdit++; 
                }
                lcd.print("            ");
-               tempMashTemp = 0; 
            }
 
            lcd.setCursor(0,1);
@@ -329,7 +332,6 @@ void printCurInputScreen()
            { 
               //make it not appear
               lcd.print("          ");
-              tempMashAmmount = 0; 
            }
            
            lcd.setCursor(0,3);
@@ -470,10 +472,8 @@ void printCurInputScreen()
               lcd.print((i+(curSavedDisplayPage*4)+1));
               if((i+(curSavedDisplayPage*4)+1)<10) lcd.print(" ");
               lcd.print(" ");
-              Serial.print((i+(curSavedDisplayPage*4))*sizeOfRecipieMem);
-              Serial.print(" ");
-              EEPROM_readAnything(((i+(curSavedDisplayPage*4))*sizeOfRecipieMem),curRecipie);
-              if(curRecipie.name[0]!='\0')lcd.print(curRecipie.name);
+              EEPROM_readAnything(((i+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
+              if(inputRecipie.name[0]!='\0')lcd.print(inputRecipie.name);
               else lcd.print("empty");
           }
           break;
@@ -536,6 +536,19 @@ void moveSelectionLeft()
 
 void increaseSelection()
 {  
+       //special case for saved list screen
+       if(currentScreen.id == savedListPickingScreen)
+       {
+          EEPROM_readAnything(((curEdit+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
+          currentScreen = strikeScreen;
+          lcd.clear();
+          curEdit = 0;
+          //set values on strike screen
+          tempMashTemp = inputRecipie.mashTemps[0];
+          tempMashAmmount = inputRecipie.mashAmmounts[0];
+          return;
+       }
+  
        if(currentVarType() == floatVar)
        {
          *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]+0.25;
@@ -599,7 +612,10 @@ void screenDone()
         currentScreen = savedListScreen;    
       }else
       {
-       //start new recipie
+       //start new blank recipie
+       inputRecipie = emptyRecipie();
+       tempMashTemp = inputRecipie.mashTemps[0];
+       tempMashAmmount = inputRecipie.mashAmmounts[0];
        curEdit = 0;
        lcd.clear();
        currentScreen = strikeScreen; 
@@ -617,10 +633,15 @@ void screenDone()
        if(inputRecipie.numberOfMashSteps==0)inputRecipie.numberOfMashSteps++;
        curDisplayedMashStep++;
        curEdit= 0;
-       lcd.clear();
-       tempMashTemp = 0;
-       tempMashAmmount = 0;
+       tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
+       tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
+       tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
+       tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
+       tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
+       tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
        currentScreen = mashScreen;
+       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep)tempMoreMashSteps = true;
+       lcd.clear();
        break;
    }
    case mashInputScreen:
@@ -644,7 +665,13 @@ void screenDone()
              tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
-             tempMoreMashSteps = true;
+             //check for if current recipie has sparge conditions from loading....
+             if(loadedRecipieHasSparge())
+             {
+               tempMoreMashSteps = false;
+               tempHasSparge = true;
+             }
+             else tempMoreMashSteps = true;
              return;
           }else
           {
@@ -665,7 +692,9 @@ void screenDone()
        {
          //go to spargeQuestion screen
          tempMoreMashSteps = false;
-         inputRecipie.numberOfMashSteps = curDisplayedMashStep;
+         tempMashAmmount = 0;
+         tempMashTemp = 0;
+//////////////////////////         inputRecipie.numberOfMashSteps = curDisplayedMashStep;
          currentScreen = spargeQuestScreen;
          return;
        }
@@ -675,7 +704,11 @@ void screenDone()
     {       
        if(tempHasSparge)
        {
-        //go to Sparge data Screen
+        if(loadedRecipieHasSparge())
+        {
+           tempMashTemp = inputRecipie.mashTemps[inputRecipie.numberOfMashSteps];
+           tempMashAmmount = inputRecipie.mashAmmounts[inputRecipie.numberOfMashSteps]; 
+        }
         lcd.clear();
         curEdit = 0;
         currentScreen = spargeDataScreen; 
@@ -710,10 +743,17 @@ void screenDone()
       inputRecipie.mashAmmounts[curDisplayedMashStep] = tempMashAmmount;
       inputRecipie.mashMotorStates[curDisplayedMashStep] = false;
       inputRecipie.mashTimes[curDisplayedMashStep] = 0;
-      //go to Wort Screen
-      tempMashHours = 0;
-      tempMashMins = 0;
-      tempMashSecs = 0;
+      //go to Wort Screen.................fill in times, temps, and hop times if they are there
+      tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
+      tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
+      tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
+      tempWortTemp = inputRecipie.wortTemp;
+      for(i=0; i<3; i++)
+      {
+        hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
+        hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
+        hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
+      }
       currentScreen = wortScreen;
       lcd.clear();
       curEdit = 0;
@@ -746,9 +786,11 @@ void screenDone()
       if(tempSave)
       {
        //Go Save
+       
+       
        lcd.clear();
        lcd.setCursor(0,0);
-       lcd.print("I'M THE SAVE SCREEN LUR"); 
+       lcd.print("I'M THE SAVE SCREEN LUR"); /////////need save screen here!!!
       }else
       {
        //start brew!
@@ -778,6 +820,14 @@ void screenBack()
 
      break;
    }  
+   
+   case strikeInputScreen:
+   {
+     currentScreen = loadOrNewScreen;
+     curEdit = 0;
+     lcd.clear();
+    break; 
+   }
     
    case mashInputScreen:
    {
@@ -796,7 +846,7 @@ void screenBack()
        }else
        {
        //go To strike
-        curDisplayedMashStep--;
+       curDisplayedMashStep--;
        tempMashTemp = inputRecipie.mashTemps[curDisplayedMashStep];
        tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
        curEdit = 0;
@@ -865,4 +915,11 @@ void screenBack()
    }
    
   } 
+}
+
+
+boolean loadedRecipieHasSparge()
+{
+    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[curDisplayedMashStep] ==  inputRecipie.mashTemps[curDisplayedMashStep+1])) return true;
+    return false;
 }

@@ -46,7 +46,7 @@ void setup()
   turnOffMultiHold();
   
   displayRecipieDebug();
-  
+
   //start Brew
   changeScreens();
   SetupHoldTemp(currentOutlet,getCurrentMashTemp(),4294967294);
@@ -101,19 +101,31 @@ void loop()
 
   case wort:
     {
-      openWortValve();
-      if(HoldTempDone(wortVesselTemp)) while(1); 
-      else
+      forceHoldTemp(spargeVesselTemp);
+      if(getTempF(getTempNew(wortVesselTemp)) < getHoldTemp()-10)
       {
-        if(isTimeForHops())
-        {
-          //pour in the hops yo! 
-        }
+       // keep holding temp and dont do anything else
+       break;
+      }else if(HoldTempDone(wortVesselTemp))
+      {
+       turnHeatersOff();
+       openWortValve();////need to end here
+       break;
+      } 
+      else if(isTimeForHops())
+      {
+         //pour in the hops yo! 
       }
-
-      break;
+      else if(getElapsed() >  (convertToSeconds(getFinalHours(),getFinalMins(),getFinalSecs())-60))
+      {
+        turnHeatersOff();
+        delay(10);//sandwitched in delays for surge protection
+        turnOnPump();
+        delay(10);
+      }
+            break;
     }
-  }
+    }
 
   if(getAllElapsed()>last)
   {
@@ -147,7 +159,7 @@ void spargeCase()
   //check for when valse its done and then do wort ish
   if(valveTimeDone(getMashAmmount(getCurrentMashStep())))
   {
-    closeMashValve();
+    //closeMashValve();
     closeSpargeValve();
     digitalWrite(outlet1,LOW);
     currentOutlet = outlet2;
@@ -260,11 +272,11 @@ void strikeCase()
   }
   else if(getTempF(getTempNew(spargeVesselTemp)) > getHoldTemp())
   {
-    //need to open valve now
-              Serial.println("TIME THAT VALVE IS OPENING FOR:");
-          Serial.print(getMashAmmount(getCurrentMashStep()));
-    resetValveCounters();
-    openSpargeValve();
+      //need to open valve now
+      Serial.println("TIME THAT VALVE IS OPENING FOR:");
+      Serial.print(getMashAmmount(getCurrentMashStep()));
+      resetValveCounters();
+      openSpargeValve();
   } 
 }
 

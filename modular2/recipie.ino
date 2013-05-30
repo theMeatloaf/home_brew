@@ -36,6 +36,26 @@ void setCurrentRecipie(struct recipie inputRecipie)
  curRecipie = inputRecipie; 
 }
 
+struct recipie emptyRecipie()
+{
+ recipie blankR;
+ blankR.numberOfMashSteps = 0;
+ for(int i=0; i<maxMashes; i++)
+ {
+    blankR.mashTemps[i] = 0;
+    blankR.mashAmmounts[i] = 0;
+    blankR.mashTimes[i] = 0;
+    blankR.mashMotorStates[i] = false;
+ }
+ blankR.wortTemp = 195.0;
+ blankR.numOfHopSteps = 0;
+ blankR.hopAdditionIntervals[0] = 0;
+ blankR.hopAdditionIntervals[1] = 0;
+ blankR.hopAdditionIntervals[2] = 0;
+  
+ return blankR;
+}
+
 void setupTestRecipie()
 {
 curRecipie.numberOfMashSteps = 3;
