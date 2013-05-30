@@ -1,4 +1,4 @@
-#define maxScreenValues 14
+#define maxScreenValues 18
 #define sizeOfRecipieMem 142
 #define numberOfSavedSlots 28
 
@@ -47,8 +47,13 @@ static int tempMashHours,tempMashMins,tempMashSecs;
 static int tempMashIntervals;
 static float tempMashTemp,tempMashAmmount;
 static float tempWortTemp = 200;
-static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave, tempLoadOrNew;
+static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave, tempLoadOrNew, isCurSaving;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
+static char tempName[17] = "                ";
+
+//name dictionary
+static char possibleChars[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','o','p','q','r','s','t','u','v','w','x','y','z','*','!','$','#'};
+ 
 
 //screen struct
 struct screen
@@ -63,6 +68,7 @@ struct screen
   boolean * onOffVars[maxScreenValues];
   boolean * yesNoVars[maxScreenValues];
   int varWidths[maxScreenValues];
+  char * nameVars[17];
 };
 
 //screen and edit counters
@@ -70,6 +76,7 @@ static screen currentScreen;
 static int curEdit=0;
 static int curSavedDisplayPage = 0;
 static int curDisplayedMashStep = 0;
+static int curCharSelection = 0;
 
 //screen defs
 screen mashScreen, strikeScreen, spargeQuestScreen, spargeDataScreen, wortScreen, saveQuestionScreen, loadOrNewScreen, savedListScreen, saveNameScreen;
@@ -127,7 +134,6 @@ int savedListCollumnLocations[NUM_OF_SAVED_LIST_INPUTS] = {0,1,2,3};
 int savedListVarWidths[NUM_OF_SAVED_LIST_INPUTS] = {17,17,17,17};
 int savedListVarTypes[NUM_OF_SAVED_LIST_INPUTS] = {0,0,0,doneVar};
 
-//
 
 void populateScreenVars()
 {   
@@ -211,6 +217,23 @@ void populateScreenVars()
    savedListScreen.varTypes[i] = savedListVarTypes[i];
   }
 
+  saveNameScreen.id = saveNameInputScreen;
+  //populate name vars straight in loop since they are all the same but the last
+  for(i=0; i<NUM_OF_SAVED_NAME_INPUTS-1; i++)
+  {
+    saveNameScreen.locationRows[i] = i;
+    saveNameScreen.locationCollums[i] = 1;
+    saveNameScreen.varWidths[i] = 1;
+    saveNameScreen.varTypes[i] = leterVar;
+    saveNameScreen.nameVars[i] = &tempName[i];
+  }
+  //do the "next" doneVar
+  saveNameScreen.locationRows[NUM_OF_SAVED_NAME_INPUTS-1]=0;
+  saveNameScreen.locationCollums[NUM_OF_SAVED_NAME_INPUTS-1]=2;
+  saveNameScreen.varWidths[NUM_OF_SAVED_NAME_INPUTS-1]=5;
+  saveNameScreen.varTypes[NUM_OF_SAVED_NAME_INPUTS-1]=doneVar;
+
+
   //initialize currentScreen
   currentScreen = loadOrNewScreen;
 }
@@ -261,10 +284,16 @@ void inputRecipieLoop()
     
   lcd.setCursor(currentRow(),currentCollumn());
   if(flashFlag)
-  {
+  {  
      for(i=0; i<curLength(); i++)
      {
+      if(currentVarType()==leterVar && tempName[curEdit]==' ')
+      {
+       lcd.print("."); 
+      }else
+      {
       lcd.print(" ");
+      }
      }
   }else
   {
@@ -466,17 +495,29 @@ void printCurInputScreen()
          
          case savedListPickingScreen:
          {
+           recipie tempRecipie;//this bug took 4 hours to find....I hate myself.
           for(i=0;i<4;i++)
           {
               lcd.setCursor(0,i);
               lcd.print((i+(curSavedDisplayPage*4)+1));
               if((i+(curSavedDisplayPage*4)+1)<10) lcd.print(" ");
               lcd.print(" ");
-              EEPROM_readAnything(((i+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
-              if(inputRecipie.name[0]!='\0')lcd.print(inputRecipie.name);
+              EEPROM_readAnything(((i+(curSavedDisplayPage*4))*sizeOfRecipieMem),tempRecipie);
+              if(tempRecipie.name[0]!='\0')lcd.print(tempRecipie.name);
               else lcd.print("empty");
           }
           break;
+         }
+         
+         case saveNameInputScreen:
+         {
+           lcd.setCursor(0,0);
+           lcd.print("NAME?:");
+           lcd.setCursor(0,1);
+           lcd.print(tempName);
+           lcd.setCursor(0,2);
+           lcd.print("NEXT?");
+          break; 
          }
     }  
 }
@@ -497,7 +538,7 @@ int curLength()
 }
 
 void moveSelectionRight()
-{
+{ 
     if(currentVarType() == doneVar)
     {
      //need to go to next Screen
@@ -539,13 +580,29 @@ void increaseSelection()
        //special case for saved list screen
        if(currentScreen.id == savedListPickingScreen)
        {
-          EEPROM_readAnything(((curEdit+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
-          currentScreen = strikeScreen;
-          lcd.clear();
-          curEdit = 0;
-          //set values on strike screen
-          tempMashTemp = inputRecipie.mashTemps[0];
-          tempMashAmmount = inputRecipie.mashAmmounts[0];
+           //if saving...
+           if(isCurSaving)
+           {
+            //save!
+            
+            EEPROM_writeAnything(((curEdit+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
+            lcd.clear();
+            lcd.setCursor(8,1);
+            lcd.print("SAVED!");
+            delay(2000);
+            isCurSaving = false;
+            lcd.clear();
+            currentScreen = savedListScreen;
+           }else
+           {
+            EEPROM_readAnything(((curEdit+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
+            currentScreen = strikeScreen;
+            lcd.clear();
+            curEdit = 0;
+            //set values on strike screen
+            tempMashTemp = inputRecipie.mashTemps[0];
+            tempMashAmmount = inputRecipie.mashAmmounts[0];
+           }
           return;
        }
   
@@ -565,10 +622,15 @@ void increaseSelection()
        {
          *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
        }
+       if(currentVarType() == leterVar && curCharSelection < 28)
+       {
+         curCharSelection++;
+         *currentScreen.nameVars[curEdit] =  possibleChars[curCharSelection];
+       }
 }
 
 void decreaseSelection()
-{
+{ 
        if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0.25)
        {
          *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]-0.25;
@@ -585,12 +647,31 @@ void decreaseSelection()
        {
          *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
        }
+       if(currentVarType() == leterVar && curCharSelection > 0)
+       {
+         curCharSelection--;
+         *currentScreen.nameVars[curEdit] =  possibleChars[curCharSelection];
+       }
 }
 
 void screenDone()
 {
  switch(currentScreen.id) 
-  {
+  { 
+   case saveNameInputScreen:
+   {
+     for(i=0; i<17; i++)
+     {
+       inputRecipie.name[i] = tempName[i];
+     }
+     isCurSaving = true;
+     lcd.clear();
+     curEdit = 0;
+     curSavedDisplayPage = 0;
+     currentScreen = savedListScreen;
+     break;
+   } 
+    
    case savedListPickingScreen:
    {
      if(curSavedDisplayPage == ((numberOfSavedSlots/4)-1))
@@ -786,11 +867,9 @@ void screenDone()
       if(tempSave)
       {
        //Go Save
-       
-       
+       curEdit = 0;
+       currentScreen = saveNameScreen;
        lcd.clear();
-       lcd.setCursor(0,0);
-       lcd.print("I'M THE SAVE SCREEN LUR"); /////////need save screen here!!!
       }else
       {
        //start brew!
@@ -799,7 +878,9 @@ void screenDone()
       }
       break;
     }
-  } 
+  }
+   Serial.print("strike!");
+  Serial.print(inputRecipie.mashTemps[0]); 
 }
 
 void screenBack()
@@ -919,7 +1000,9 @@ void screenBack()
 
 
 boolean loadedRecipieHasSparge()
-{
-    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[curDisplayedMashStep] ==  inputRecipie.mashTemps[curDisplayedMashStep+1])) return true;
+{  
+
+  
+    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[inputRecipie.numberOfMashSteps] ==  inputRecipie.mashTemps[inputRecipie.numberOfMashSteps-1])) return true;
     return false;
 }
