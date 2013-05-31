@@ -101,10 +101,10 @@ void loop()
 
   case wort:
     {
-      forceHoldTemp(spargeVesselTemp);
       if(getTempF(getTempNew(wortVesselTemp)) < getHoldTemp()-10)
       {
        // keep holding temp and dont do anything else
+       forceHoldTemp(spargeVesselTemp);
        break;
       }else if(HoldTempDone(wortVesselTemp))
       {
@@ -125,7 +125,7 @@ void loop()
       }
             break;
     }
-    }
+}
 
   if(getAllElapsed()>last)
   {

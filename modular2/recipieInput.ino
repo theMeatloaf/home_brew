@@ -49,10 +49,10 @@ static float tempMashTemp,tempMashAmmount;
 static float tempWortTemp = 200;
 static boolean tempMashMotorOn,tempMoreMashSteps, tempHasSparge, tempSave, tempLoadOrNew, isCurSaving;
 static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
-static char tempName[17] = "                ";
+static char tempName[18] = "                 ";
 
 //name dictionary
-static char possibleChars[] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','o','p','q','r','s','t','u','v','w','x','y','z','*','!','$','#'};
+static char possibleChars[] = {' ','a','b','c','d','e','f','g','h','i','j','k','l','m','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','*','!','$','#'};
  
 
 //screen struct
@@ -122,7 +122,7 @@ int saveStartVarWidths[NUM_OF_SAVE_START_INPUTS] = {3,6};
 boolean * saveStartYesNoVars[NUM_OF_SAVE_START_INPUTS] = {&tempSave,0};
 
 //load or new screen vars
-int loadOrNewRowLocations[NUM_OF_LOAD_NEW_INPUTS] = {0,0};
+int loadOrNewRowLocations[NUM_OF_LOAD_NEW_INPUTS] = {6,6};
 int loadOrNewCollumnLocations[NUM_OF_LOAD_NEW_INPUTS] = {1,2};
 int loadOrNewVarTypes[NUM_OF_LOAD_NEW_INPUTS] = {yes_noVar,doneVar};
 int loadOrNewVarWidths[NUM_OF_LOAD_NEW_INPUTS] = {4,6};
@@ -289,7 +289,7 @@ void inputRecipieLoop()
      {
       if(currentVarType()==leterVar && tempName[curEdit]==' ')
       {
-       lcd.print("."); 
+       lcd.print("_"); 
       }else
       {
       lcd.print(" ");
@@ -484,11 +484,11 @@ void printCurInputScreen()
           lcd.setCursor(0,0);
           lcd.print("Load Saved Or New?");
           
-          lcd.setCursor(0,1);
+          lcd.setCursor(6,1);
           if(tempLoadOrNew)lcd.print("Load");
           else lcd.print("New ");
           
-          lcd.setCursor(0,2);
+          lcd.setCursor(6,2);
           lcd.print("DONE?");
           break;
          }
@@ -539,6 +539,8 @@ int curLength()
 
 void moveSelectionRight()
 { 
+    curCharSelection = 0;
+  
     if(currentVarType() == doneVar)
     {
      //need to go to next Screen
@@ -596,6 +598,7 @@ void increaseSelection()
            }else
            {
             EEPROM_readAnything(((curEdit+(curSavedDisplayPage*4))*sizeOfRecipieMem),inputRecipie);
+            curDisplayedMashStep = 0;
             currentScreen = strikeScreen;
             lcd.clear();
             curEdit = 0;
@@ -622,7 +625,7 @@ void increaseSelection()
        {
          *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
        }
-       if(currentVarType() == leterVar && curCharSelection < 28)
+       if(currentVarType() == leterVar && curCharSelection < 38)
        {
          curCharSelection++;
          *currentScreen.nameVars[curEdit] =  possibleChars[curCharSelection];
@@ -746,13 +749,17 @@ void screenDone()
              tempMashHours = convertToDisHours(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashMins = convertToDisMins(inputRecipie.mashTimes[curDisplayedMashStep]);
              tempMashSecs = convertToDisSecs(inputRecipie.mashTimes[curDisplayedMashStep]);
+             if(curDisplayedMashStep == inputRecipie.numberOfMashSteps-1)
+             {
+              tempMoreMashSteps = false; 
+             }else tempMoreMashSteps = true;
              //check for if current recipie has sparge conditions from loading....
-             if(loadedRecipieHasSparge())
+         /*    if(loadedRecipieHasSparge())
              {
                tempMoreMashSteps = false;
                tempHasSparge = true;
              }
-             else tempMoreMashSteps = true;
+             else tempMoreMashSteps = true;*/
              return;
           }else
           {
@@ -775,6 +782,8 @@ void screenDone()
          tempMoreMashSteps = false;
          tempMashAmmount = 0;
          tempMashTemp = 0;
+         if(loadedRecipieHasSparge())tempHasSparge=true;
+         else tempHasSparge = false;
 //////////////////////////         inputRecipie.numberOfMashSteps = curDisplayedMashStep;
          currentScreen = spargeQuestScreen;
          return;
@@ -804,10 +813,20 @@ void screenDone()
         inputRecipie.mashMotorStates[curDisplayedMashStep] = false; //turn off during non sparge
         inputRecipie.mashTimes[curDisplayedMashStep-1] = convertToSeconds(tempMashHours,tempMashMins,tempMashSecs);
         inputRecipie.mashTimes[curDisplayedMashStep] = 0;
+        inputRecipie.mashAmmounts[curDisplayedMashStep] = 0;//to be sure it clears out sparge if its there
 
-        tempMashHours = 0;
-        tempMashMins = 0;
-        tempMashSecs = 0;
+        //go to Wort Screen....fill in times, temps, and hop times if they are there
+        tempMashHours = convertToDisHours(inputRecipie.wortTotalSecs);
+        tempMashMins = convertToDisMins(inputRecipie.wortTotalSecs);
+        tempMashSecs = convertToDisSecs(inputRecipie.wortTotalSecs);
+        tempWortTemp = inputRecipie.wortTemp;
+        for(i=0; i<3; i++)
+        {
+          hopIntHours[i] = convertToDisHours(inputRecipie.hopAdditionIntervals[i]);
+          hopIntMins[i] = convertToDisMins(inputRecipie.hopAdditionIntervals[i]);
+          hopIntSecs[i] = convertToDisSecs(inputRecipie.hopAdditionIntervals[i]);
+        }
+
         currentScreen = wortScreen;
         lcd.clear();
         curEdit = 0;
@@ -868,6 +887,8 @@ void screenDone()
       {
        //Go Save
        curEdit = 0;
+       //clear Name var
+       for(i =0; i<18; i++) tempName[i] = inputRecipie.name[i];
        currentScreen = saveNameScreen;
        lcd.clear();
       }else
@@ -879,18 +900,34 @@ void screenDone()
       break;
     }
   }
-   Serial.print("strike!");
-  Serial.print(inputRecipie.mashTemps[0]); 
 }
 
+
+///////////////for going back to the last screen
 void screenBack()
 {
    switch(currentScreen.id) 
   {
+   case saveNameInputScreen:
+  {
+    //go back to save question screen
+    currentScreen = saveQuestionScreen;
+    lcd.clear();
+    curEdit = 0;
+    break;
+  } 
+    
+    
    case savedListPickingScreen:
    {
      curEdit = 0;
      lcd.clear();
+     if(isCurSaving)
+     {
+      //go back to name screen
+     currentScreen = saveNameScreen; 
+     return;
+     }
      if(curSavedDisplayPage == 0)
      {
       //go back to first question
@@ -1001,8 +1038,10 @@ void screenBack()
 
 boolean loadedRecipieHasSparge()
 {  
-
-  
-    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[inputRecipie.numberOfMashSteps] ==  inputRecipie.mashTemps[inputRecipie.numberOfMashSteps-1])) return true;
+    if(inputRecipie.mashTimes[inputRecipie.numberOfMashSteps]==0 && (inputRecipie.mashTemps[inputRecipie.numberOfMashSteps] ==  inputRecipie.mashTemps[inputRecipie.numberOfMashSteps-1] 
+    && inputRecipie.mashTemps[inputRecipie.numberOfMashSteps]!=0))
+     {
+       return true;
+     }
     return false;
 }

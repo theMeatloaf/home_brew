@@ -318,7 +318,7 @@ void displayRecipieDebug()
    
    
    Serial.print("Hop Times:");
-   for(int i=0; i<=curRecipie.numOfHopSteps; i++)
+   for(int i=0; i<curRecipie.numOfHopSteps; i++)
    {
      Serial.print(curRecipie.hopAdditionIntervals[i]);
      Serial.print(" ");
