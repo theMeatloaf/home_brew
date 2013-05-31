@@ -3,6 +3,7 @@
 
 //mash variables
 #define maxMashes 10
+#define secondsPerQuart 9.825
 
 //static counters and flags;
 static unsigned int valveOpenSecs = 0;
@@ -47,11 +48,16 @@ struct recipie emptyRecipie()
     blankR.mashTimes[i] = 0;
     blankR.mashMotorStates[i] = false;
  }
- blankR.wortTemp = 195.0;
+ blankR.wortTemp = 198.0;
  blankR.numOfHopSteps = 0;
  blankR.hopAdditionIntervals[0] = 0;
  blankR.hopAdditionIntervals[1] = 0;
  blankR.hopAdditionIntervals[2] = 0;
+  
+ for(int i =0; i<17; i++)
+ {
+  blankR.name[i] = ' ';
+ } 
   
  return blankR;
 }
@@ -170,7 +176,8 @@ void resetValveCounters()
 //function for Mash valve function
 boolean mashValveTimeDone()
 {  
-  if(valveOpenSecs <= curRecipie.mashAmmounts[currentMashStep])
+  //TODO!!! convert to float calculations for exact times per quart
+  if(valveOpenSecs  <= (curRecipie.mashAmmounts[currentMashStep] * secondsPerQuart))
   {   
   thisValveSec = (millis()/1000);
   if(thisValveSec > lastValveSec)//if second has passed...display

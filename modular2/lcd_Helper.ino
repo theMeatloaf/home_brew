@@ -121,6 +121,7 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
   else lcd.print("N/A");
   lcd.print(" out of ");
   lcd.print(getNumberOfMashSteps()-1);
+  lcd.print("  ");
   
   lcd.setCursor(0,3);
   lcd.print("Motor:");

@@ -157,7 +157,7 @@ void spargeCase()
   forceHoldTemp(spargeVesselTemp);
 
   //check for when valse its done and then do wort ish
-  if(valveTimeDone(getMashAmmount(getCurrentMashStep())))
+  if(mashValveTimeDone())
   {
     //closeMashValve();
     closeSpargeValve();
@@ -216,7 +216,7 @@ void mashCase()
        if(getMashAmmount(getCurrentMashStep())>0)
        {
           Serial.println("TIME THAT VALVE IS OPENING FOR:");
-          Serial.print(getMashAmmount(getCurrentMashStep()));
+          Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
           resetValveCounters();
           openSpargeValve();
           return;
@@ -242,10 +242,10 @@ void mashoutCase()
 
   //when done just move to sparge..
   //NEED MASHOUT TIME VALUE HERE
-  if(valveTimeDone(10))
+  if(valveTimeDone(20*9.825))
   {
     Serial.print("SPARGING FOR:");
-    Serial.print(getMashAmmount(getCurrentMashStep()));
+    Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
     resetValveCounters();
     openSpargeValve();
     brewStage = sparge;
@@ -262,7 +262,7 @@ void strikeCase()
     if(mashValveTimeDone())
     {
       //close valve
-      closeSpargeValve(); 
+      closeSpargeValve();
       //setup next temp control
       moveToNextMashStep();
       SetupHoldTemp(currentOutlet,getCurrentMashTemp(),getCurrentMashTime());
@@ -274,7 +274,7 @@ void strikeCase()
   {
       //need to open valve now
       Serial.println("TIME THAT VALVE IS OPENING FOR:");
-      Serial.print(getMashAmmount(getCurrentMashStep()));
+      Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
       resetValveCounters();
       openSpargeValve();
   } 
