@@ -28,7 +28,92 @@ long debounceDelay = 10;    // the debounce time; increase if the output flicker
 
 void setupButtons() {
 //do less
+}
 
+boolean emergencyShutdown()
+{
+  boolean upPressed = false;
+  boolean downPressed = false;
+  
+ int readingUp = digitalRead(buttonUp);
+ int readingDown = digitalRead(buttonDown);
+ 
+   if (readingUp != lastButtonStateUP) 
+  {
+    increFlag = LOW;
+    lastDebounceTimeUp = millis();
+  } 
+  
+  if (readingDown != lastButtonStateDOWN) 
+  {
+    increFlag = LOW;
+    lastDebounceTimeDown = millis();
+  } 
+
+  if ((millis() - lastDebounceTimeUp) > debounceDelay) {
+    buttonStateUp = readingUp;
+    if(buttonStateUp == HIGH)
+     {
+       upPressed = true;
+     }
+  }
+  
+  if ((millis() - lastDebounceTimeDown) > debounceDelay) {
+    buttonStateDown = readingDown;
+    if(buttonStateDown == HIGH)
+     {
+        downPressed = true;
+     }
+  }
+  
+   if(upPressed == true && downPressed == true)
+   {
+     return true;
+   }
+   return false;
+}
+
+boolean resetScreen()
+{
+  boolean rightPressed = false;
+  boolean leftPressed = false;
+  
+ int readingLeft = digitalRead(buttonLeft);
+ int readingRight = digitalRead(buttonRight);
+ 
+ if (readingLeft != lastButtonStateLEFT) 
+ {
+    increFlag = LOW;
+    lastDebounceTimeLeft = millis();
+ } 
+  
+  if (readingRight != lastButtonStateRIGHT) 
+  {
+    increFlag = LOW;
+    lastDebounceTimeRight = millis();
+  } 
+
+  if ((millis() - lastDebounceTimeRight) > debounceDelay) {
+    buttonStateRight = readingRight;
+    if(buttonStateUp == HIGH)
+     {
+       rightPressed = true;
+     }
+  }
+  
+  if ((millis() - lastDebounceTimeLeft) > debounceDelay) {
+    buttonStateLeft = readingLeft;
+    if(buttonStateLeft == HIGH)
+     {
+        leftPressed = true;
+     }
+  }
+  
+   if(rightPressed == true && rightPressed == true)
+   {
+     return true;
+   }
+   return false;
 }
 
 //check each for debounce and be able to return which one....have flag for 2 or more etc....
@@ -42,7 +127,7 @@ int Buttonloop() {
   // If the switch changed, due to noise or pressing:
   if (readingUp != lastButtonStateUP) 
   {
-    increFlag = 0;
+    increFlag = LOW;
     lastDebounceTimeUp = millis();
   } 
   

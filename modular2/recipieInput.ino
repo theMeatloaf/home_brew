@@ -52,7 +52,7 @@ static int hopIntHours[3],hopIntMins[3],hopIntSecs[3];
 static char tempName[18] = "                 ";
 
 //name dictionary
-static char possibleChars[] = {' ','a','b','c','d','e','f','g','h','i','j','k','l','m','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','*','!','$','#'};
+static char possibleChars[] = {' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9','*','!','$','#'};
  
 
 //screen struct
@@ -625,7 +625,7 @@ void increaseSelection()
        {
          *currentScreen.yesNoVars[curEdit] = !*currentScreen.yesNoVars[curEdit];
        }
-       if(currentVarType() == leterVar && curCharSelection < 38)
+       if(currentVarType() == leterVar && curCharSelection < 39)
        {
          curCharSelection++;
          *currentScreen.nameVars[curEdit] =  possibleChars[curCharSelection];
@@ -634,7 +634,7 @@ void increaseSelection()
 
 void decreaseSelection()
 { 
-       if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0.25)
+       if(currentVarType() == floatVar && *currentScreen.floatVars[curEdit]>0)
        {
          *currentScreen.floatVars[curEdit] = *currentScreen.floatVars[curEdit]-0.25;
        }
@@ -724,7 +724,7 @@ void screenDone()
        tempMashAmmount = inputRecipie.mashAmmounts[curDisplayedMashStep];
        tempMashMotorOn = inputRecipie.mashMotorStates[curDisplayedMashStep];
        currentScreen = mashScreen;
-       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep)tempMoreMashSteps = true;
+       if(inputRecipie.numberOfMashSteps > curDisplayedMashStep && !loadedRecipieHasSparge())tempMoreMashSteps = true;
        lcd.clear();
        break;
    }

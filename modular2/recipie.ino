@@ -3,7 +3,7 @@
 
 //mash variables
 #define maxMashes 10
-#define secondsPerQuart 9.825
+#define secondsPerQuart 9.825 
 
 //static counters and flags;
 static unsigned int valveOpenSecs = 0;
@@ -245,6 +245,11 @@ int totalHopsSteps()
 unsigned int currentIntervalTime()
 {
  return  curRecipie.hopAdditionIntervals[currentHopStep-1];
+}
+
+unsigned int hopInterval(int i)
+{
+ return curRecipie.hopAdditionIntervals[i]; 
 }
 
 boolean isTimeForHops()

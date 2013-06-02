@@ -6,6 +6,8 @@ extern const int wort = 2;
 extern const int strike = 0;
 extern const int sparge = 3;
 extern const int mashout = 4;
+extern const int emergencyShutoff = 5;
+extern const int complete = 6;
 
 //most important flag!
 extern boolean readyToBrew = false;
@@ -55,6 +57,18 @@ void setup()
 
 void loop()
 { 
+  if(resetScreen())
+  {
+   setupLCD(); 
+  }
+  
+  if(emergencyShutdown())
+  {
+   //need to shutdown!
+   brewStage = emergencyShutoff;
+   last = 0;
+  }
+  
   //check for input here and change display case acordingly...also check for emergency
   int ButtonValue = Buttonloop();
   if(ButtonValue==3 || ButtonValue==4)
@@ -101,35 +115,31 @@ void loop()
 
   case wort:
     {
-      if(getTempF(getTempNew(wortVesselTemp)) < getHoldTemp()-10)
-      {
-       // keep holding temp and dont do anything else
-       forceHoldTemp(spargeVesselTemp);
+       wortCase();
        break;
-      }else if(HoldTempDone(wortVesselTemp))
-      {
-       turnHeatersOff();
-       openWortValve();////need to end here
-       break;
-      } 
-      else if(isTimeForHops())
-      {
-         //pour in the hops yo! 
-      }
-      else if(getElapsed() >  (convertToSeconds(getFinalHours(),getFinalMins(),getFinalSecs())-60))
-      {
-        turnHeatersOff();
-        delay(10);//sandwitched in delays for surge protection
-        turnOnPump();
-        delay(10);
-      }
-            break;
     }
+   case emergencyShutoff:
+   {
+      emergencyShutdownCase();
+      break; 
+   }
+   case complete:
+   {
+     
+     break; 
+   }
 }
 
   if(getAllElapsed()>last)
   {
     //A second Has gone By...decide what to display
+    if(getAllElapsed() % 5 == 0) //for printing to csv format!
+    {
+          Serial.print(getAllElapsed());
+          Serial.print(",");
+          Serial.print(getTempF(getTempNew(spargeVesselTemp)));
+          Serial.println();
+    }
     switch(displayOption)
     {
     case 0:
@@ -194,6 +204,8 @@ void mashCase()
     {
       //keep holding temp
       forceHoldTemp(spargeVesselTemp);
+      if(valveTimeDone(10))closeMashValve(); //close mashValve that was opened temporatily to allow stuff to flow!
+      
       if(mashValveTimeDone())
       {
           if(moveToNextMashStep())
@@ -218,6 +230,7 @@ void mashCase()
           Serial.println("TIME THAT VALVE IS OPENING FOR:");
           Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
           resetValveCounters();
+          openMashValve();
           openSpargeValve();
           return;
       }else if(moveToNextMashStep())//if no valve Time then setup other stuff
@@ -241,8 +254,8 @@ void mashoutCase()
   forceHoldTemp(spargeVesselTemp);
 
   //when done just move to sparge..
-  //NEED MASHOUT TIME VALUE HERE
-  if(valveTimeDone(20*9.825))
+  //NEED MASHOUT TIME VALUE HERE/////////////////
+  if(valveTimeDone(630))
   {
     Serial.print("SPARGING FOR:");
     Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
@@ -265,6 +278,7 @@ void strikeCase()
       closeSpargeValve();
       //setup next temp control
       moveToNextMashStep();
+      if(motorIsOn()){digitalWrite(motorRelay,HIGH);}
       SetupHoldTemp(currentOutlet,getCurrentMashTemp(),getCurrentMashTime());
       brewStage = mash;
       last = 0;
@@ -278,6 +292,46 @@ void strikeCase()
       resetValveCounters();
       openSpargeValve();
   } 
+}
+
+void wortCase()
+{   
+      if(getTempF(getTempNew(wortVesselTemp)) < getHoldTemp()-3)
+      {
+       // keep holding temp and dont do anything else
+       forceHoldTemp(spargeVesselTemp);
+       return;
+      }else if(HoldTempDone(wortVesselTemp))
+      {
+       turnHeatersOff();
+       openWortValve();////need to end here
+       brewStage = complete;
+       return;
+      } 
+      else if(isTimeForHops())
+      {
+        //increment times
+      }
+      else if(getElapsed() >  (convertToSeconds(getFinalHours(),getFinalMins(),getFinalSecs())-180))
+      {
+        turnHeatersOff();
+        delay(10);//sandwitched in delays for surge protection
+        turnOnPump();
+        delay(10);
+        if(getElapsed() <  (convertToSeconds(getFinalHours(),getFinalMins(),getFinalSecs())-178)){setupLCD();}
+      }
+
+    if(hopInterval(0)<=getElapsed() && totalHopsSteps()>0){turnOnHopper1();}
+    if(hopInterval(1)<=getElapsed() && totalHopsSteps()>1){turnOnHopper2();}
+    if(hopInterval(2)<=getElapsed() && totalHopsSteps()>2){turnOnHopper3();}
+}
+
+void emergencyShutdownCase()
+{
+    turnHeatersOff();
+    closeSpargeValve();
+    closeWortValve();
+    closeMashValve();
 }
 
 int currentBrewStage()

@@ -216,7 +216,8 @@ LiquidCrystal lcd(lcdP1, lcdP2, lcdP3, lcdP4, lcdP5, lcdP6);
    case mash:lcd.print("Mash         "); break;
    case sparge:lcd.print("Sparge      "); break;
    case mashout:lcd.print("Mash Out      "); break;
-
+   case emergencyShutoff:lcd.print("Shut Down!  "); break;
+   case complete:lcd.print("Complete   "); break;
   }
   
   lcd.setCursor(0,3);
