@@ -9,6 +9,9 @@ extern const int mashout = 4;
 extern const int emergencyShutoff = 5;
 extern const int complete = 6;
 
+#define MASHOUT_TIME 1
+#define SPARGE_WAIT_TIME 1
+
 //most important flag!
 extern boolean readyToBrew = false;
 
@@ -177,7 +180,7 @@ void spargeCase()
   }
   
   //check if its been closed for a while (10 mins) before turning on wort
-  if(valveTimeDone((getMashAmmount(getCurrentMashStep()) * 9.825) + 600)) //600
+  if(valveTimeDone((getMashAmmount(getCurrentMashStep()) * 9.825) + SPARGE_WAIT_TIME)) //600
   {
     currentOutlet = outlet2;
     SetupHoldTemp(currentOutlet,wortGoalTemp(),wortTotalTime());
@@ -209,7 +212,7 @@ void mashCase()
 {
   if(mashValveIsOpen())
   {
-      if(valveTimeDone(11))closeMashValve(); //close mashValve that was opened temporatily to allow stuff to flow!  
+      if(valveTimeDone(15))closeMashValve(); //close mashValve that was opened temporatily to allow stuff to flow!  
   }
   
   //check if valve is currently open and either just keep holding temp and keep open, or close and go to next mash step
@@ -267,7 +270,7 @@ void mashoutCase()
 
   //when done just move to sparge..
   //NEED MASHOUT TIME VALUE HERE/////////////////
-  if(valveTimeDone(780)) //780
+  if(valveTimeDone(MASHOUT_TIME)) //780
   {
     Serial.print("SPARGING FOR:");
     Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
