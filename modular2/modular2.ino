@@ -26,7 +26,7 @@ void setup()
 
   setupPins();
   setupLCD();
-
+  
   //init input Screens
   populateScreenVars();
 
@@ -65,6 +65,9 @@ void loop()
   if(emergencyShutdown())
   {
    //need to shutdown!
+   turnAlarmOn();
+    delay(500);
+    turnAlarmOff();
    brewStage = emergencyShutoff;
    last = 0;
   }
@@ -137,7 +140,7 @@ void loop()
     {
           Serial.print(getAllElapsed());
           Serial.print(",");
-          Serial.print(getTempF(getTempNew(spargeVesselTemp)));
+          Serial.print(getTempF(getTempNew(wortVesselTemp)));
           Serial.println();
     }
     switch(displayOption)
@@ -165,17 +168,22 @@ void loop()
 void spargeCase()
 {
   forceHoldTemp(spargeVesselTemp);
+  digitalWrite(outlet1,LOW);//turn off in case water gets too low
 
-  //check for when valse its done and then do wort ish
+  //check for when valve is done and just close spargevalve
   if(mashValveTimeDone())
   {
-    //closeMashValve();
     closeSpargeValve();
-    digitalWrite(outlet1,LOW);
+  }
+  
+  //check if its been closed for a while (10 mins) before turning on wort
+  if(valveTimeDone((getMashAmmount(getCurrentMashStep()) * 9.825) + 600)) //600
+  {
     currentOutlet = outlet2;
     SetupHoldTemp(currentOutlet,wortGoalTemp(),wortTotalTime());
     brewStage = wort;
-  } 
+  }
+   
 }
 
 void setupNextMashCase()
@@ -199,12 +207,16 @@ void setupNextMashCase()
 
 void mashCase()
 {
+  if(mashValveIsOpen())
+  {
+      if(valveTimeDone(11))closeMashValve(); //close mashValve that was opened temporatily to allow stuff to flow!  
+  }
+  
   //check if valve is currently open and either just keep holding temp and keep open, or close and go to next mash step
   if(spargeValveIsOpen())
     {
       //keep holding temp
       forceHoldTemp(spargeVesselTemp);
-      if(valveTimeDone(10))closeMashValve(); //close mashValve that was opened temporatily to allow stuff to flow!
       
       if(mashValveTimeDone())
       {
@@ -255,7 +267,7 @@ void mashoutCase()
 
   //when done just move to sparge..
   //NEED MASHOUT TIME VALUE HERE/////////////////
-  if(valveTimeDone(630))
+  if(valveTimeDone(780)) //780
   {
     Serial.print("SPARGING FOR:");
     Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
@@ -267,11 +279,10 @@ void mashoutCase()
 
 void strikeCase()
 {
-  HoldTempDone(spargeVesselTemp);
-
   //check if valve is currently open and act acordinly (setup next mash or continue keeping it hang)
   if(spargeValveIsOpen())
   {
+    forceHoldTemp(spargeVesselTemp);//keep holding temp and counting
     if(mashValveTimeDone())
     {
       //close valve
@@ -282,16 +293,20 @@ void strikeCase()
       SetupHoldTemp(currentOutlet,getCurrentMashTemp(),getCurrentMashTime());
       brewStage = mash;
       last = 0;
+      openMashValve();//to allow for some to flow in
     }
   }
-  else if(getTempF(getTempNew(spargeVesselTemp)) > getHoldTemp())
+  else if(getTempF(getTempNew(spargeVesselTemp)) > getHoldTemp() && getFinalSecsInt()>600)
   {
-      //need to open valve now
+  SetupHoldTemp(currentOutlet,getCurrentMashTemp(),600);//hold for 10 mins more
+  } else if(HoldTempDone(spargeVesselTemp))
+  {
+       //need to open valve now
       Serial.println("TIME THAT VALVE IS OPENING FOR:");
       Serial.print(getMashAmmount(getCurrentMashStep()) * 9.825);
       resetValveCounters();
-      openSpargeValve();
-  } 
+      openSpargeValve(); 
+  }
 }
 
 void wortCase()
@@ -332,6 +347,8 @@ void emergencyShutdownCase()
     closeSpargeValve();
     closeWortValve();
     closeMashValve();
+    digitalWrite(motorRelay,LOW);
+
 }
 
 int currentBrewStage()

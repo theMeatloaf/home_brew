@@ -2,7 +2,6 @@
 
 double holdTemp, Input, Output;
 const int numReadings = 30;
-static boolean IS_ON;
 double readings[numReadings]; // the readings from the analog input
 int index = 0; // the index of the current reading
 double total = 0; // the running total
@@ -63,12 +62,10 @@ void PIDLoop(double temp,int pin,int vessel) {
   }
   if(Output > now - windowStartTime)
  { 
-   IS_ON = true;
    digitalWrite(pin,HIGH);
  }
   else 
   {
-    IS_ON = false;
     digitalWrite(pin,LOW);
   }
 }
@@ -78,10 +75,6 @@ double getHoldTemp()
    return holdTemp;
 }
 
-boolean isHeatOn()
-{
- return IS_ON; 
-}
 
 void tempControllerPrint()
 {

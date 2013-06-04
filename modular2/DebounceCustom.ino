@@ -30,6 +30,17 @@ void setupButtons() {
 //do less
 }
 
+boolean resetScreen()
+{
+ int readingRight = digitalRead(buttonRight);
+ int readingLeft = digitalRead(buttonLeft);
+ if(readingRight == 1 && readingLeft == 1)
+ {
+  return true; 
+ }
+ return false;
+}
+
 boolean emergencyShutdown()
 {
   boolean upPressed = false;
@@ -67,49 +78,6 @@ boolean emergencyShutdown()
   }
   
    if(upPressed == true && downPressed == true)
-   {
-     return true;
-   }
-   return false;
-}
-
-boolean resetScreen()
-{
-  boolean rightPressed = false;
-  boolean leftPressed = false;
-  
- int readingLeft = digitalRead(buttonLeft);
- int readingRight = digitalRead(buttonRight);
- 
- if (readingLeft != lastButtonStateLEFT) 
- {
-    increFlag = LOW;
-    lastDebounceTimeLeft = millis();
- } 
-  
-  if (readingRight != lastButtonStateRIGHT) 
-  {
-    increFlag = LOW;
-    lastDebounceTimeRight = millis();
-  } 
-
-  if ((millis() - lastDebounceTimeRight) > debounceDelay) {
-    buttonStateRight = readingRight;
-    if(buttonStateUp == HIGH)
-     {
-       rightPressed = true;
-     }
-  }
-  
-  if ((millis() - lastDebounceTimeLeft) > debounceDelay) {
-    buttonStateLeft = readingLeft;
-    if(buttonStateLeft == HIGH)
-     {
-        leftPressed = true;
-     }
-  }
-  
-   if(rightPressed == true && rightPressed == true)
    {
      return true;
    }
@@ -156,7 +124,7 @@ int Buttonloop() {
     if(buttonStateUp == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed up");
+       //Serial.println("Pressed up");
        return 1;
      }
   }
@@ -166,7 +134,7 @@ int Buttonloop() {
     if(buttonStateDown == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Down");
+       //Serial.println("Pressed Down");
        return 2;
      }
   }
@@ -176,7 +144,7 @@ int Buttonloop() {
     if(buttonStateLeft == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Left");
+       //Serial.println("Pressed Left");
        return 3;
     }
   }
@@ -186,7 +154,7 @@ int Buttonloop() {
     if(buttonStateRight == HIGH && increFlag < numOfReturn)
      {
        increFlag ++;
-       Serial.println("Pressed Right");
+       //Serial.println("Pressed Right");
         return  4;
      }
   }
@@ -209,10 +177,10 @@ int ButtonloopRepeate()
    holdCounter++;
    if(holdCounter == 1)
    {
-    Serial.print("Value Output!");
+    //Serial.print("Value Output!");
     return curButtValue; 
    }
-   if(holdCounter>50 && (curButtValue == 1 || curButtValue == 2))
+   if(holdCounter>150 && (curButtValue == 1 || curButtValue == 2))
    {
     return curButtValue; 
    }

@@ -83,6 +83,11 @@ void setupTempController()
   startTempControl();
 }
 
+unsigned int getFinalSecsInt()
+{
+ return finalSecs; 
+}
+
 int getFinalHours()
 {
   return displayHoursF; 

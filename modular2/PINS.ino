@@ -21,6 +21,7 @@ extern const int hopHopper1 = 24;
 extern const int hopHopper2 = 19;
 extern const int hopHopper3 = 26;
 extern const int pumpRelayPin = 12;
+extern const int alarmRelayPin = 8;
 
 Servo hopServo1;
 Servo hopServo2;
@@ -44,6 +45,7 @@ void setupPins()
   pinMode(wortValve,OUTPUT);
   pinMode(mashValve,OUTPUT);
   pinMode(pumpRelayPin,OUTPUT);
+  pinMode(alarmRelayPin,OUTPUT);
   
   hopServo1.attach(hopHopper1);
   hopServo2.attach(hopHopper2);
@@ -52,6 +54,16 @@ void setupPins()
   hopServo2.detach();
   hopServo3.detach();
 
+}
+
+void turnAlarmOn()
+{
+ digitalWrite(alarmRelayPin,HIGH); 
+}
+
+void turnAlarmOff()
+{
+ digitalWrite(alarmRelayPin,LOW); 
 }
 
 void keepServo1Off()
@@ -65,6 +77,15 @@ void keepServo2Off()
 void keepServo3Off()
 {  
   hopServo3.detach();
+}
+
+boolean isSpargeHeaterOn()
+{
+  if(digitalRead(outlet1) == HIGH)
+  {
+   return true; 
+  }
+  return false;
 }
 
 void turnHeatersOff()
@@ -87,6 +108,12 @@ boolean spargeValveIsOpen()
 void closeSpargeValve()
 {
   digitalWrite(spargeValve,LOW);
+}
+
+boolean mashValveIsOpen()
+{
+ if (digitalRead(mashValve)) return true;
+ return false; 
 }
 
 void openMashValve()

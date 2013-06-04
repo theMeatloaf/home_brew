@@ -49,12 +49,13 @@ struct recipie emptyRecipie()
     blankR.mashMotorStates[i] = false;
  }
  blankR.wortTemp = 198.0;
+ blankR.wortTotalSecs = 0;
  blankR.numOfHopSteps = 0;
  blankR.hopAdditionIntervals[0] = 0;
  blankR.hopAdditionIntervals[1] = 0;
  blankR.hopAdditionIntervals[2] = 0;
   
- for(int i =0; i<17; i++)
+ for(int i =0; i<18; i++)
  {
   blankR.name[i] = ' ';
  } 
@@ -108,10 +109,10 @@ curRecipie.name[16] = '3';
 
  
 //test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-Serial.print("THIS IS THE ADDRESS");
+//Serial.print("THIS IS THE ADDRESS");
 //Serial.print((1+(0*4))*142);
-Serial.print(EEPROM_writeAnything(((1+(0*4))*142), curRecipie));
-Serial.println();
+//Serial.print(EEPROM_writeAnything(((1+(0*4))*142), curRecipie));
+//Serial.println();
 /*for(int i=0; i<4; i++)
   {
     EEPROM_readAnything(i*145,curRecipie);

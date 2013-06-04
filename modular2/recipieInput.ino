@@ -514,7 +514,7 @@ void printCurInputScreen()
            lcd.setCursor(0,0);
            lcd.print("NAME?:");
            lcd.setCursor(0,1);
-           lcd.print(tempName);
+           for(i=0; i<17; i++)lcd.print(tempName[i]);
            lcd.setCursor(0,2);
            lcd.print("NEXT?");
           break; 
