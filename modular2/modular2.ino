@@ -9,8 +9,8 @@ extern const int mashout = 4;
 extern const int emergencyShutoff = 5;
 extern const int complete = 6;
 
-#define MASHOUT_TIME 1
-#define SPARGE_WAIT_TIME 1
+#define MASHOUT_TIME 600
+#define SPARGE_WAIT_TIME 600
 
 //most important flag!
 extern boolean readyToBrew = false;
